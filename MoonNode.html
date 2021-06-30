@@ -1,0 +1,351 @@
+<!--
+  Copyright JS Foundation and other contributors, http://js.foundation
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+
+<script type="text/html" data-template-name="moonNode-event">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"> Name</span></label>
+        <input type="text" id="node-input-name" data-i18n="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-interval"><span data-i18n="common.label.interval"> Interval (sec's)</span></label>
+        <input type="number" step=".01" id="node-input-interval" data-i18n="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-delta"><span data-i18n="common.label.delta"> Change Delta</span></label>
+        <input type="number" step=".01" id="node-input-delta" data-i18n="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-modelPath"><span data-i18n="common.label.modelPath"> Model Path</span></label>
+        <input type="text" id="node-input-modelPath" data-i18n="">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="moonNode-event">
+    <p>Watches for a change to a specific object key value</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>Key Path
+            <span class="property-type"> json path (eg: job.file.fileName)</span>
+        </dt>
+        <dd> The JSON path to monitor for changes </dd>
+        <dt class="optional">Interval <span class="property-type"> Number</span>
+        </dt>
+        <dd> Minimum duration to wait between duplicate events </dd>
+        <dt class="optional">Change Delta <span class="property-type"> Number</span></dt>
+        <dd> The amount the value must have changed by since the last triggered event.</dd>
+    </dl>
+    
+    <h3>Outputs</h3>
+         <ol class="node-ports">
+             <li>Event Out
+                 <dl class="message-properties">
+                     <dt>msg.moonNode.eventValue <span class="property-type">(varies)</span></dt>
+                     <dd>This object returns the value from the matching Model Path</dd>
+                     <dt>msg.moonNode.lastEventValue <span class="property-type">(varies)</span></dt>
+                     <dd>This object returns the value from the previous matching event</dd>
+                 </dl>
+             </li>
+         </ol>
+    
+    <h3>Details</h3>
+        <p>Use this node to watch for value changes to the object specified in 'Model Path'.
+            For example, to watch for changes to the current job name, set the 'Model Path' to <code>print_stats.filename</code>.
+            Use 'Interval' & 'Change Delta' to control the frequecy that the node will trigger. This is useful when
+            watching for changes in the model which change very frequently eg. Temps.
+        </p>
+        <p>
+            The output msg will passthrough the <code>payload.fullModel</code>, <code>payload.patchModel</code>,
+            & <code>payload.prevModel</code> 
+            received from the Monitor node.
+        </p>
+        <p>
+            To identify the correct model path for your use case, use a Debug node on the Monitor node to output the
+             Machine Model to the debug window. You can use the 'copy path' button & paste into 'Model Path'. 
+             The 'Model Path' does not require any prefixes eg. <code>payload.fullModel</code>, <code>payload.patchModel</code>,
+              or <code>payload.prevModel</code>, so remove them from any pasted values.
+        </p>
+    
+    <h3>References</h3>
+        <ul>
+            <li><a href="https://github.com/MintyTrebor/moonNode">GitHub</a> See the wiki for more information</li>
+        </ul>
+</script>
+
+<script type="text/html" data-template-name="moonNode-connector">
+    <div class="form-row">
+        <label for="node-config-input-server"><i class="fa fa-bookmark"></i> Moonraker WS (IP:Port)</label>
+        <input type="text" id="node-config-input-server" style="width: 70%">
+    </div>
+    <div class="form-row">
+        <label for="node-config-input-mrapi"><i class="fa fa-bookmark"></i> Moonraker API</label>
+        <input type="text" id="node-config-input-mrapi" style="width: 70%">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="moonNode-connector">
+    <p>Connection details</p>
+    
+    <h3>Details</h3>
+        <p>Enter the IP address & port of the Moonraker websocket.</p> 
+    <h3>References</h3>
+        <ul>
+            <li><a href="https://github.com/MintyTrebor/moonNode">GitHub</a> See the wiki for more information</li>
+        </ul>
+</script>
+
+<script type="text/html" data-template-name="moonNode-monitor">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"> Name</span></label>
+        <input type="text" id="node-input-name" data-i18n="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-server"><i class="fa fa-globe"></i><span data-i18n="moonNode-command.label.server"> moonNode WS (IP:Port)</span></label>
+        <input type="text" id="node-input-server" style="width: 70%"/>
+    </div>
+    <div class="form-row">
+        <label for="node-input-autoStart"><span data-i18n="moonNode-command.label.autoStart"> Auto Start</span></label>
+        <input type="checkbox" id="node-input-autoStart" value="true">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="moonNode-monitor">
+    <p>Connects to Moonraker WebSocket</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>Auto Start
+            <span class="property-type"> CheckBox</span>
+        </dt>
+        <dd> Set the monitor to autostart polling for information at boot/deployment</dd>
+    </dl>
+    <ol class="node-ports">
+        <li>Monitor In
+            <dl class="message-properties">
+                <dt>payload.monitorState <span class="property-type"> String</span></dt>
+                <dd>Set to <code>ON</code> or <code>OFF</code> to start/stop the node from polling Moonraker. Useful in scenarios where monitoring is not required 24/7. (EG. control by Start/Stop buttons on a dashboard)</dd>
+            </dl>
+        </li>
+    </ol>
+
+    
+    <h3>Outputs</h3>
+         <ol class="node-ports">
+             <li>Model Out
+                 <dl class="message-properties">
+                     <dt>payload.fullModel <span class="property-type">JSON Object</span></dt>
+                     <dd>This object conatins the latest full model from moonraker which has been combined with the latest patch update.</dd>
+                 </dl>
+                 <dl class="message-properties">
+                    <dt>payload.patchModel <span class="property-type">JSON Object</span></dt>
+                    <dd>This object contains the latest update from moonraker. A patch is a fragment of the full model - containing only the changed data since the last update.</dd>
+                </dl>
+                <dl class="message-properties">
+                    <dt>payload.prevModel <span class="property-type">JSON Object</span></dt>
+                    <dd>This object contains the previous full model before the latest patch update. Use this to compare current to previous versions of the model.</dd>
+                </dl>
+             </li>
+         </ol>
+    
+    <h3>Details</h3>
+        <p>This is the main node, providing the connection to moonNode.</p><br>
+        <p>Specify the Moonraker WebSocket ip address & port (or use localhost if node-red is installed on the same SBC/PC as Moonraker).</p><br>
+        <p>Only 1 Monitor node should be deployed per Moonraker instance, to avoid creating too many sessions.
+            A single monitor node can provide updates to any other flows using the 
+            'Link In' & 'Link Out' standard nodes.</p>
+    
+    <h3>References</h3>
+        <ul>
+            <li><a href="https://github.com/MintyTrebor/moonNode">GitHub</a> See the wiki for more information</li>
+        </ul>
+</script>
+
+<script type="text/html" data-template-name="moonNode-command">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"> Name</span></label>
+        <input type="text" id="node-input-name" data-i18n="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-server"><i class="fa fa-globe"></i><span data-i18n="moonNode-command.label.server"> Moonraker IP</span></label>
+        <input type="text" id="node-input-server" style="width: 70%"/>
+    </div>
+    <div class="form-row">
+        <label for="node-input-command"><span data-i18n="common.label.command"> Command</span></label>
+        <input type="text" id="node-input-command" data-i18n="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-stateless"><span data-i18n="common.label.stateless"> Stateless</span></label>
+        <input type="checkbox" id="node-input-stateless" value="false">
+    </div>
+</script>
+
+<script type="text/html" data-help-name="moonNode-command">
+    <p>Send a g-code or command to Moonraker</p>
+    
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>Command
+            <span class="property-type"> String</span>
+        </dt>
+        <dd> The g-code or klipper command to send to Moonraker. Note: if the incoming msg has <code>msg.payload.cmd</code> set then that value will be used as the command to send.  </dd>
+        <dt>Stateless
+            <span class="property-type"> CheckBox</span>
+        </dt>
+        <dd> If enabled the node will output the incoming msg as soon as the command is sent to Moonraker, it will not wait for a response.  When disabled the node will wait for a response from Moonraker before sending the incoming msg.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <ol class="node-ports">
+        <li>CMD Out
+            <dl class="message-properties">
+                <dd>When the command is sent, or sent & completed (depending on <code>stateless</code> mode), the node will output the incoming msg object here.</dt>
+            </dl>
+        </li>
+        <li>CMD Response Data
+            <dl class="message-properties">
+                <dd>(Only active when stateless mode is disabled) - If the command returns data (eg probe height values) these values will be outputted here.</dt>
+            </dl>
+        </li>
+        <li>Error
+            <dl class="message-properties">
+                <dd>(Only active when stateless mode is disabled) - If the command returns an error the error information will be outputted here.</dt>
+            </dl>
+        </li>
+    </ol>
+
+<h3>Details</h3>
+   <p>Use this node to send a command to Moonraker.</p>
+   <p>The output will passthrough the incoming msg object, after sending the command.</p>    
+    
+    <h3>References</h3>
+        <ul>
+            <li><a href="https://github.com/MintyTrebor/moonNode">GitHub</a> See the wiki for more information</li>
+        </ul>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('moonNode-connector',{
+        color: "#0099ff",
+        category: 'config',
+        defaults: {
+            server: {value: "localhost:7125", required: true},
+            mrapi: {value: "", required: false},
+        },
+        label: function() {
+            return this.server;
+            //return this.mrapi;
+        },
+        paletteLabel: function() {
+            return "moonNode Connector";
+        }
+    });
+
+    RED.nodes.registerType('moonNode-monitor', {
+        color: "#0099ff",
+        category: 'moonNode-node',
+        defaults: {
+            name: {value:"moonNode Monitor"},
+            server: {value:"", type:"moonNode-connector", required:true},
+            autoStart: {value: "true"},
+        },
+        inputs:1,
+        outputs:1,
+        icon: "font-awesome/fa-eye",
+        label: function() {
+            return this.name||this._("moonNode Monitor");
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            var node = this;
+            var previousValueType = {value:"prev",label:this._("moonNode-monitor.previous"),hasValue:false};
+            var andLabel = this._("moonNode-monitor.and");
+            var caseLabel = this._("moonNode-monitor.ignorecase");                
+        },
+        paletteLabel: function() {
+            return "moonNode Monitor";
+        },
+        inputLabels: "Monitor Input",
+        outputLabels: "Model Out"
+    });
+
+    RED.nodes.registerType('moonNode-command', {
+        color: "#0099ff",
+        category: 'moonNode-node',
+        defaults: {
+            name: {value:""},
+            command: {value:""},
+            server: {value:"", type:"moonNode-connector", required:true},
+            stateless: {value: false}
+        },
+        inputs: 1,
+        outputs: 3,
+        icon: "font-awesome/fa-microchip",
+        label: function() {
+            return this.name||this._("moonNode CMD");
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            var node = this;
+            var previousValueType = {value:"prev",label:this._("moonNode-command.previous"),hasValue:false};
+            var andLabel = this._("moonNode-command.and");
+            var caseLabel = this._("moonNode-command.ignorecase");                
+        },
+        paletteLabel: function() {
+            return "moonNode CMD";
+        },
+        inputLabels: "CMD In",
+        outputLabels: ["CMD Out", "CMD Response Data", "Error"]
+    });
+
+    RED.nodes.registerType('moonNode-event', {
+        color: "#0099ff",
+        category: 'moonNode-node',
+        defaults: {
+            name: {value:""},
+            interval: {value:"0"},
+            delta: {value:"0"},
+            modelPath: {value: null, required:true},
+            outputs: {value:1}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "font-awesome/fa-cogs",
+        label: function() {
+            return this.name||this._("moonNode Event");
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+            var node = this;
+            var previousValueType = {value:"prev",label:this._("moonNode-event.previous"),hasValue:false};
+            var andLabel = this._("moonNode-event.and");
+            var caseLabel = this._("moonNode-event.ignorecase");                
+        },
+        paletteLabel: function() {
+            return "moonNode Event";
+        },
+        inputLabels: "Model In",
+        outputLabels: "Event Out"
+    });
+</script>
+
+
+
