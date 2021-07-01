@@ -12,5 +12,7 @@ MoonNode enables easy connection to Moonraker and constructs a model representin
  - **MoonNode-Event** : Parses the updated model for a specified object value change, and triggers when a match if found.
  - **MoonNode-CMD**: Send a g-code or command to Moonraker for action.
 
-  
+ Please referr to the [moonNode wiki] (https://github.com/MintyTrebor/moonNode/wiki) for information on installation and use.
+ 
+ (moonNode IS NOT YET PUBLISHED TO Node-Red REPO)
 
