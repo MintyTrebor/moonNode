@@ -48,7 +48,7 @@ module.exports = function(RED) {
             try{
                 var patchJSON = msg.payload.patchModel;
                 if(patchJSON){
-                    var matchInPatch = jp.query(patchJSON, (`$.${node.modelPath}`));
+                    var matchInPatch = jp.query(patchJSON, (`$..${node.modelPath}`));
                     if(JSON.stringify(matchInPatch) != "[]"){
                         var matchVal = matchInPatch[0];
                         //we have a match so check if other conditions are met.
