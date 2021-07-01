@@ -14,7 +14,7 @@ MoonNode enables easy connection to Moonraker and constructs a model representin
 
  Please referr to the [moonNode wiki](https://github.com/MintyTrebor/moonNode/wiki) for information on installation and use.
  
- [moonNode @ Node-Red](https://flows.nodered.org/node/node-red-contrib-moonnode)
+ [moonNode @ Node-Red](https://flows.nodered.org/node/node-red-contrib-moonnode)  
  [moonNode @ NPM](https://www.npmjs.com/package/node-red-contrib-moonnode)
  
  moonNode uses the following libraries/modules:  
