@@ -19,7 +19,7 @@
   },
   "node-red": {
     "nodes": {
-      "MoonrakerNode": "MoonNode.js"
+      "moonnode": "MoonNode.js"
     }
   },
   "author": "Minty Trebor",
