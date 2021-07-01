@@ -15,4 +15,12 @@ MoonNode enables easy connection to Moonraker and constructs a model representin
  Please referr to the [moonNode wiki](https://github.com/MintyTrebor/moonNode/wiki) for information on installation and use.
  
  (moonNode IS NOT YET PUBLISHED TO Node-Red REPO)
+ 
+ moonNode uses the following libraries/modules:  
+
+ - [DeepMerge](https://www.npmjs.com/package/deepmerge)
+ - [axios](https://www.npmjs.com/package/axios)
+ - [jasonpath](https://www.npmjs.com/package/jsonpath)
+ - [ws](https://www.npmjs.com/package/ws)
+
 
