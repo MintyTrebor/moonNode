@@ -179,7 +179,7 @@ module.exports = function(RED) {
                 for(ni in fullList.result.objects){
                     var tmpParam = null;
                     var tmpObj = fullList.result.objects[ni];
-                    if(!tmpObj.includes("gcode_macro") && !tmpObj.includes("menu") && !tmpObj.includes("webhooks") && !tmpObj.includes("configfile") && !tmpObj.includes("display_status") && !tmpObj.includes("output_pin beeper") && !tmpObj.includes("virtual_sdcard")){
+                    if(!tmpObj.includes("gcode_macro") && !tmpObj.includes("menu") && !tmpObj.includes("webhooks") && !tmpObj.includes("configfile") && !tmpObj.includes("display_status") && !tmpObj.includes("output_pin beeper")){
                         //tmpParam = {tmpObj : null};
                         reqObj.params.objects[tmpObj] = null;
                     }
