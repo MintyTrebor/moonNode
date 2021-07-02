@@ -160,6 +160,11 @@
                     <dd>This object contains the previous full model before the latest patch update. Use this to compare current to previous versions of the model.</dd>
                 </dl>
              </li>
+             <li>Connection Msgs
+                <dl class="message-properties">
+                    <dd>Provides information about the connection state to moonraker - useful for debugging etc</dd>
+                </dl>
+            </li>
          </ol>
     
     <h3>Details</h3>
@@ -271,7 +276,7 @@
             autoStart: {value: "true"},
         },
         inputs:1,
-        outputs:1,
+        outputs:2,
         icon: "font-awesome/fa-eye",
         label: function() {
             return this.name||this._("moonNode Monitor");
@@ -289,7 +294,7 @@
             return "moonNode Monitor";
         },
         inputLabels: "Monitor Input",
-        outputLabels: "Model Out"
+        outputLabels: ["Model Out", "Connection Msgs"]
     });
 
     RED.nodes.registerType('moonNode-command', {
