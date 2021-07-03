@@ -26,4 +26,5 @@ MoonNode enables easy connection to Moonraker and constructs a model representin
 
 Changelog:  
 0.0.4 -- Monitor node now auto recovers should Moonraker disconnect or report errors. Added Connection Msgs output to Monitor Node for debugging connections etc.  
-0.0.5 -- Fixed potential issue with keepalive monitor.
+0.0.5 -- Fixed potential issue with keepalive monitor.  
+0.0.6 -- Fixed small issues with autorecovery, updated help text.
