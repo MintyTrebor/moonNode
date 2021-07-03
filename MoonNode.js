@@ -348,8 +348,8 @@ module.exports = function(RED) {
                     var tmpFullModel = null
                     if(!node.printerReady && !node.gotPrinterStatus){
                         ///this condition should never be hit its here just in case
-                        sendAlertMsg("Gettings Moonraker Status This shouldn't happen!");
-                        node.gotPrinterStatus = getPrinterStatus();
+                        node.stopKeepAlive = true;
+                        restartWS("Unknown Status Received from Moonraker!");
                         return;
                     }
                     if(!node.printerReady && node.gotPrinterStatus){
