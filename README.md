@@ -24,6 +24,6 @@ MoonNode enables easy connection to Moonraker and constructs a model representin
  - [jasonpath](https://www.npmjs.com/package/jsonpath)
  - [ws](https://www.npmjs.com/package/ws)  
 
- ChangeLog:  
- 0.0.4 -- Monitor node now auto recovers should Moonraker disconnect or report errors. Added Connection Msgs output to Monitor Node for debugging connections etc.
-
+Changelog:  
+0.0.4 -- Monitor node now auto recovers should Moonraker disconnect or report errors. Added Connection Msgs output to Monitor Node for debugging connections etc.  
+0.0.5 -- Fixed potential issue with keepalive monitor.
