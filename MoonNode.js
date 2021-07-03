@@ -126,9 +126,13 @@ module.exports = function(RED) {
         this.stopKeepAlive = false;
         var node = this;
         var msg = null;
+        var MoonID = null;
         const merge = require('deepmerge')
-        const MoonID = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
         const axios = require("axios");
+
+        var getMoonID = function(){
+            return Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
+        };
 
         var sendAlertMsg = function(e) {
             msg = {
@@ -157,6 +161,7 @@ module.exports = function(RED) {
         };
 
         var restartWS = function(e) {
+            node.stopKeepAlive = true;
             msg = {
                 topic:"moonNodeModel", 
                 payload: null,
@@ -165,15 +170,16 @@ module.exports = function(RED) {
                 }
             };
             node.send([null, msg]);
-            node.printerReady = false;
-            node.gotPrinterObjects = false;
-            node.gotPrinterStatus = false;
             node.normClose = true;
-            node.subscribed = false;
-            node.gotMoonSub = false;
             node.moonNodeFirstMsg = true;
             try{
                 node.moonNodeWS.close();
+                node.printerReady = false;
+                node.gotPrinterObjects = false;
+                node.gotPrinterStatus = false;
+                node.subscribed = false;
+                node.gotMoonSub = false;
+                node.moonNodeWS = null;
                 node.stopKeepAlive = true;
             }catch{
                 ///
@@ -271,6 +277,7 @@ module.exports = function(RED) {
 
         var setupMoonws = async function() {                
             //Make an HTTP GET request to get one shot token if API has been provided
+            node.stopKeepAlive = true;
             if(node.mrapi){
                 try{
                     const getOneShotKey = await axios({
@@ -292,6 +299,7 @@ module.exports = function(RED) {
             //open the websocket (use onse shot token if needed)           
             try{
                 if(node.nodeRun){
+                    MoonID = getMoonID();
                     if(node.osKey){
                         //sendAlertMsg("Opening WS with OS key = " + node.osKey);
                         node.moonNodeWS = new node.ws(`${node.wsurl}?token=${node.osKey}`);
@@ -304,9 +312,6 @@ module.exports = function(RED) {
             catch(e){
                 node.osKey = null;
                 restartWS(e);
-                if(node.nodeRun){
-                    setTimeout(() => {  setupMoonws(); }, 10000);
-                };
             }
             
             node.moonNodeWS.on('error', function (error){
@@ -355,7 +360,10 @@ module.exports = function(RED) {
                     if(!node.printerReady && node.gotPrinterStatus){
                         //sendAlertMsg("Moonraker Status: = " + JSON.stringify(data));
                         node.printerReady = checkIfPrinterReady(data);
-                        if(!node.printerReady){restartWS("Moonraker status Is not ready.");}
+                        if(!node.printerReady){
+                            node.stopKeepAlive = true;
+                            restartWS("Moonraker status Is not ready.");
+                        }
                         return;
                     }
                     if(node.printerReady && !node.gotPrinterObjects){
@@ -474,6 +482,7 @@ module.exports = function(RED) {
                 else if(toggle == "OFF"){
                     node.nodeRun = false;
                     node.normClose = true;
+                    node.stopKeepAlive = true;
                     node.moonNodeWS.close();
                 }
             }
