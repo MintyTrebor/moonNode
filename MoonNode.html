@@ -65,6 +65,7 @@
     <h3>Details</h3>
         <p>Use this node to watch for value changes to the object specified in 'Model Path'.
             For example, to watch for changes to the current job name, set the 'Model Path' to <code>print_stats.filename</code>.
+            If the path contains a space it should be formatted like this <code>["temperature_sensor chamber"].temperature</code> (example).
             Use 'Interval' & 'Change Delta' to control the frequecy that the node will trigger. This is useful when
             watching for changes in the model which change very frequently eg. Temps.
         </p>
