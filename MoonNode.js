@@ -130,6 +130,7 @@ module.exports = function(RED) {
         var MoonID = null;
         const merge = require('deepmerge')
         const axios = require("axios");
+        const jp = require('jsonpath');
 
         function getMoonID() {
             return Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
@@ -138,12 +139,11 @@ module.exports = function(RED) {
         function heartbeat() {
             clearTimeout(this.pingTimeout);
             this.pingTimeout = setTimeout(() => {
-                node.moonNodeWS.terminate();
                 if(!node.inRestart){
                     node.inRestart = true;
                     restartWS("TimeOut Resetting Connection to Moonraker");
                 }
-            }, 10000 + 1000);
+            }, 20000 + 1000);
         }
         
         var sendAlertMsg = function(e) {
@@ -173,6 +173,7 @@ module.exports = function(RED) {
         };
 
         var restartWS = function(e) {
+            node.inRestart = true;
             clearTimeout(this.pingTimeout);
             msg = {
                 topic:"moonNodeModel", 
@@ -199,8 +200,8 @@ module.exports = function(RED) {
             }
             if(node.nodeRun){
                 setTimeout(() => {  
-                    setupMoonws(); 
                     node.inRestart = false;
+                    setupMoonws();     
                 }, 10000);
             }
             node.inRestart = false;
@@ -238,6 +239,7 @@ module.exports = function(RED) {
         };
 
         var getPrinterObjects = function(){
+            //sendAlertMsg("RUNNING getPrinterObjects");
             try {                
                 var reqObj = {
                     "jsonrpc": "2.0",
@@ -252,6 +254,7 @@ module.exports = function(RED) {
         };
         
         var setupMoonSubscription = function(moonObjects) {
+            //sendAlertMsg("RUNNING setupMoonSubscription");
             try {                
                 var fullList = JSON.parse(moonObjects);
                 var reqObj = {
@@ -271,6 +274,7 @@ module.exports = function(RED) {
                         reqObj.params.objects[tmpObj] = null;
                     }
                 }
+                //sendAlertMsg("Sending : " + JSON.stringify(reqObj));
                 node.moonNodeWS.send(JSON.stringify(reqObj));
                 return true;
             }catch(e){
@@ -322,8 +326,6 @@ module.exports = function(RED) {
             node.moonNodeWS.on('error', function (error){
                 node.osKey = null;
                 if(!node.inRestart){
-                    clearTimeout(this.pingTimeout);
-                    node.moonNodeWS.terminate();
                     node.inRestart = true;
                     restartWS("Websocket Error = " + error);
                 }
@@ -347,7 +349,6 @@ module.exports = function(RED) {
                 node.gotMoonSub = false;
                 node.printerReady = false;
                 if(e == 1005){
-                    clearTimeout(this.pingTimeout);
                     if(node.nodeRun && !node.inRestart){
                         node.inRestart = true;
                         restartWS("Websocket closed");
@@ -381,15 +382,17 @@ module.exports = function(RED) {
                         return;
                     }
                     if(node.printerReady && node.gotPrinterObjects && !node.gotMoonSub){
-                        //sendAlertMsg("Printer Objects: = " + JSON.stringify(data));
-                        node.gotMoonSub = setupMoonSubscription(data);
-                        //now we are in normal mode so setup keep alive
-                        if(node.gotMoonSub){
-                            return;
+                        var tmpRetObj = JSON.parse(data);
+                        var matchInPatch = jp.query(tmpRetObj, (`$..result.objects`));
+                        if(JSON.stringify(matchInPatch) != "[]"){
+                            //sendAlertMsg("Printer Objects: = " + JSON.stringify(data));
+                            node.gotMoonSub = setupMoonSubscription(data);
                         }else{
-                            node.printerReady = false;
-                            node.gotPrinterStatus = false;
-                            node.gotPrinterStatus = getPrinterStatus();  
+                            node.gotMoonSub = false;
+                        }
+                        //now we are in normal mode so setup keep alive
+                        if(!node.gotMoonSub){
+                            node.gotPrinterObjects = getPrinterObjects();  
                             return;                           
                         }
                     }
@@ -397,7 +400,8 @@ module.exports = function(RED) {
                         //This is the first data return from moonraker, so use the data to construct the model.
                         tmpFullModel = JSON.parse(data);
                         //need a catch here because of inconsistencies in returned data format
-                        try{
+                        var matchInPatch = jp.query(tmpFullModel, (`$..result.status`));
+                        if(JSON.stringify(matchInPatch) != "[]"){
                             node.moonNodeFullModel = tmpFullModel.result.status;
                             msg = {
                                 topic:"moonNodeModel", 
@@ -410,8 +414,8 @@ module.exports = function(RED) {
                             node.send([msg, null]);
                             node.moonNodeFirstMsg = false;
                         }
-                        catch{
-                            //no action required
+                        else{
+                            
                         }
                     } else if(!node.moonNodeFirstMsg && node.gotMoonSub && node.printerReady){
                         //merge the update with the model if required
