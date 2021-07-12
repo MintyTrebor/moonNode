@@ -110,6 +110,23 @@ module.exports = function(RED) {
         this.wsurl = `ws://${this.server.server}/websocket`;
         this.mrapi = this.server.credentials.mrapi;
         this.autoStart = config.autoStart;
+        this.mObjPR = config.mObjPR;
+        this.mObjProbe = config.mObjProbe;
+        this.mObjES = config.mObjES;
+        this.mObjTSCh = config.mObjTSCh;
+        this.mObjHeatBed = config.mObjHeatBed;
+        this.mObjExFan = config.mObjExFan;
+        this.mObjTH = config.mObjTH;
+        this.mObjGMov = config.mObjGMov;
+        this.mObjTSrPi = config.mObjTSrPi;
+        this.mObjTHrPi = config.mObjTHrPi;
+        this.mObjVDSC = config.mObjVDSC;
+        this.mObjSysStat = config.mObjSysStat;
+        this.mObjITO = config.mObjITO;
+        this.mObjFan = config.mObjFan;
+        this.mObjBMesh = config.mObjBMesh;
+        this.mObjPrStat = config.mObjPrStat;
+        this.mObjExt = config.mObjExt;
         this.ws = require('ws');
         this.moonNodeFirstMsg = true;
         this.moonNodeFullModel = null;
@@ -256,6 +273,7 @@ module.exports = function(RED) {
         var setupMoonSubscription = function(moonObjects) {
             //sendAlertMsg("RUNNING setupMoonSubscription");
             try {                
+                //sendAlertMsg(JSON.stringify(moonObjects));
                 var fullList = JSON.parse(moonObjects);
                 var reqObj = {
                     "jsonrpc": "2.0",
@@ -266,15 +284,23 @@ module.exports = function(RED) {
                     "id": MoonID
                 }
                 var ni = null;
-                //merge tabs
-                for(ni in fullList.result.objects){
-                    var tmpParam = null;
-                    var tmpObj = fullList.result.objects[ni];
-                    if(!tmpObj.includes("gcode_macro") && !tmpObj.includes("menu") && !tmpObj.includes("webhooks") && !tmpObj.includes("configfile") && !tmpObj.includes("display_status") && !tmpObj.includes("output_pin beeper")){
-                        reqObj.params.objects[tmpObj] = null;
-                    }
-                }
-                //sendAlertMsg("Sending : " + JSON.stringify(reqObj));
+                if(node.mObjPR){reqObj.params.objects["pause_resume"] = null;};
+                if(node.mObjProbe){reqObj.params.objects["probe"] = null;};
+                if(node.mObjES){reqObj.params.objects["query_endstops"] = null;};
+                if(node.mObjTSCh){reqObj.params.objects["temperature_sensor chamber"] = null;};
+                if(node.mObjHeatBed){reqObj.params.objects["heater_bed"] = null;};
+                if(node.mObjExFan){reqObj.params.objects["heater_fan extruder_fan"] = null;};
+                if(node.mObjTH){reqObj.params.objects["toolhead"] = null;};
+                if(node.mObjGMov){reqObj.params.objects["gcode_move"] = null;};
+                if(node.mObjTSrPi){reqObj.params.objects["temperature_sensor raspberry_pi"] = null;};
+                if(node.mObjTHrPi){reqObj.params.objects["temperature_host raspberry_pi"] = null;};
+                if(node.mObjVDSC){reqObj.params.objects["virtual_sdcard"] = null;};
+                if(node.mObjSysStat){reqObj.params.objects["system_stats"] = null;};
+                if(node.mObjITO){reqObj.params.objects["idle_timeout"] = null;};
+                if(node.mObjFan){reqObj.params.objects["fan"] = null;};
+                if(node.mObjBMesh){reqObj.params.objects["bed_mesh"] = null;};
+                if(node.mObjPrStat){reqObj.params.objects["print_stats"] = null;};
+                if(node.mObjExt){reqObj.params.objects["extruder"] = null;};
                 node.moonNodeWS.send(JSON.stringify(reqObj));
                 return true;
             }catch(e){
