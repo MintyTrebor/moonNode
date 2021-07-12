@@ -3,7 +3,7 @@
 
 Moonraker enables websocketed API access to Klipper, which is control software used to execute g-code to operate a physical machine. This is typically used by 3d Printers, CNC machines etc..
 
-MoonNode enables easy connection to Moonraker and constructs a model representing the current state of the entire Machine and its associated components. The model is a JSON object and is constantly updated by Moonraker.
+MoonNode enables easy connection to Moonraker and constructs a model representing the current state of the Machine objects chosen for monitoring. The model is a JSON object and is constantly updated by Moonraker.  
 
 **MoonNode has 4 nodes:**
 
@@ -27,4 +27,5 @@ MoonNode enables easy connection to Moonraker and constructs a model representin
 Changelog:  
 0.0.4 -- Monitor node now auto recovers should Moonraker disconnect or report errors. Added Connection Msgs output to Monitor Node for debugging connections etc.  
 0.0.5 -- Fixed potential issue with keepalive monitor.  
-0.0.6-0.0.12 -- Fixed small issues with autorecovery, updated help text, fixed reporting bugs & added more failure conditions to autorecovery.
+0.0.6-0.0.12 -- Fixed small issues with autorecovery, updated help text, fixed reporting bugs & added more failure conditions to autorecovery.  
+0.0.13 -- Monitor node now allows user to choose which machine objects to monitor. 
