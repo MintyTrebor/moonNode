@@ -191,6 +191,14 @@
         <label for="node-input-mObjExt"><span data-i18n="moonNode-command.label.mObjExt"> Extruder</span></label>
         <input type="checkbox" id="node-input-mObjExt" value="false">
     </div>
+    <div class="form-row">
+        <label for="node-input-mObjFilSen"><span data-i18n="moonNode-command.label.mObjFilSen"> Filament Sensor</span></label>
+        <input type="checkbox" id="node-input-mObjFilSen" value="false">
+    </div>
+    <div class="form-row">
+        <label for="node-input-mObjDispStat"><span data-i18n="moonNode-command.label.mObjDispStat"> Display Status</span></label>
+        <input type="checkbox" id="node-input-mObjDispStat" value="false">
+    </div>
 </script>
 
 <script type="text/html" data-help-name="moonNode-monitor">
@@ -360,7 +368,9 @@
             mObjFan : {value: "false"},
             mObjBMesh : {value: "false"},
             mObjPrStat : {value: "false"},
-            mObjExt: {value: "false"}
+            mObjExt: {value: "false"},
+            mObjFilSen: {value: "false"},
+            mObjDispStat: {value: "false"}
         },
         inputs:1,
         outputs:2,
