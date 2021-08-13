@@ -127,6 +127,8 @@ module.exports = function(RED) {
         this.mObjBMesh = config.mObjBMesh;
         this.mObjPrStat = config.mObjPrStat;
         this.mObjExt = config.mObjExt;
+        this.mObjDispStat = config.mObjDispStat;
+        this.mObjFilSen = config.mObjFilSen;
         this.ws = require('ws');
         this.moonNodeFirstMsg = true;
         this.moonNodeFullModel = null;
@@ -301,6 +303,8 @@ module.exports = function(RED) {
                 if(node.mObjBMesh){reqObj.params.objects["bed_mesh"] = null;};
                 if(node.mObjPrStat){reqObj.params.objects["print_stats"] = null;};
                 if(node.mObjExt){reqObj.params.objects["extruder"] = null;};
+                if(node.mObjFilSen){reqObj.params.objects["filament_switch_sensor"] = null;};
+                if(node.mObjDispStat){reqObj.params.objects["display_status"] = null;};
                 node.moonNodeWS.send(JSON.stringify(reqObj));
                 return true;
             }catch(e){
