@@ -136,8 +136,12 @@
         <input type="checkbox" id="node-input-mObjES" value="false">
     </div>
     <div class="form-row">
-        <label for="node-input-mObjTSCh"><span data-i18n="moonNode-command.label.mObjTSCh"> Chamber</span></label>
+        <label for="node-input-mObjTSCh"><span data-i18n="moonNode-command.label.mObjTSCh"> Temp Sensor</span></label>
         <input type="checkbox" id="node-input-mObjTSCh" value="false">
+    </div>
+    <div class="form-row">
+        <label for="node-input-TSChName"><i class="fa fa-tag"></i> <span data-i18n="common.label.TSChName"> Temp Sensor Name</span></label>
+        <input type="text" id="node-input-TSChName">
     </div>
     <div class="form-row">
         <label for="node-input-mObjHeatBed"><span data-i18n="moonNode-command.label.mObjHeatBed"> Heated Bed</span></label>
@@ -196,8 +200,20 @@
         <input type="checkbox" id="node-input-mObjFilSen" value="false">
     </div>
     <div class="form-row">
+        <label for="node-input-FilSenName"><i class="fa fa-tag"></i> <span data-i18n="common.label.FilSenName"> Filament Sensor Name</span></label>
+        <input type="text" id="node-input-FilSenName">
+    </div>
+    <div class="form-row">
         <label for="node-input-mObjDispStat"><span data-i18n="moonNode-command.label.mObjDispStat"> Display Status</span></label>
         <input type="checkbox" id="node-input-mObjDispStat" value="false">
+    </div>
+    <div class="form-row">
+        <label for="node-input-mObjGCMacro"><span data-i18n="moonNode-command.label.mObjGCMacro"> GCode Macro</span></label>
+        <input type="checkbox" id="node-input-mObjGCMacro" value="false">
+    </div>
+    <div class="form-row">
+        <label for="node-input-GCMacroName"><i class="fa fa-tag"></i> <span data-i18n="common.label.GCMacroName"> GCode Macro Name</span></label>
+        <input type="text" id="node-input-GCMacroName">
     </div>
 </script>
 
@@ -356,6 +372,7 @@
             mObjProbe : {value: "false"},
             mObjES : {value: "false"},
             mObjTSCh : {value: "false"},
+            TSChName : {value: ""},
             mObjHeatBed : {value: "false"},
             mObjExFan : {value: "false"},
             mObjTH : {value: "false"},
@@ -368,9 +385,12 @@
             mObjFan : {value: "false"},
             mObjBMesh : {value: "false"},
             mObjPrStat : {value: "false"},
-            mObjExt: {value: "false"},
-            mObjFilSen: {value: "false"},
-            mObjDispStat: {value: "false"}
+            mObjExt : {value: "false"},
+            mObjFilSen : {value: "false"},
+            FilSenName : {value: ""},
+            mObjDispStat : {value: "false"},
+            mObjGCMacro : {value: "false"},
+            GCMacroName : {value: ""}
         },
         inputs:1,
         outputs:2,
