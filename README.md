@@ -27,5 +27,7 @@ Changelog:
 0.0.6-0.0.12 -- Fixed small issues with autorecovery, updated help text, fixed reporting bugs & added more failure conditions to autorecovery.  
 0.0.13 -- Monitor node now allows user to choose which machine objects to monitor.  
 0.0.14 -- Added filament sensor and display status to the list of monitored objects.  
+0.0.15 -- Added ability to set sensor & macro names for selected objects.  
+
 
 
