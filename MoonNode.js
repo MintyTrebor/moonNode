@@ -114,6 +114,7 @@ module.exports = function(RED) {
         this.mObjProbe = config.mObjProbe;
         this.mObjES = config.mObjES;
         this.mObjTSCh = config.mObjTSCh;
+        this.TSChName = config.TSChName;
         this.mObjHeatBed = config.mObjHeatBed;
         this.mObjExFan = config.mObjExFan;
         this.mObjTH = config.mObjTH;
@@ -129,6 +130,9 @@ module.exports = function(RED) {
         this.mObjExt = config.mObjExt;
         this.mObjDispStat = config.mObjDispStat;
         this.mObjFilSen = config.mObjFilSen;
+        this.FilSenName = config.FilSenName;
+        this.mObjGCMacro = config.mObjGCMacro;
+        this.GCMacroName = config.GCMacroName;
         this.ws = require('ws');
         this.moonNodeFirstMsg = true;
         this.moonNodeFullModel = null;
@@ -289,7 +293,7 @@ module.exports = function(RED) {
                 if(node.mObjPR){reqObj.params.objects["pause_resume"] = null;};
                 if(node.mObjProbe){reqObj.params.objects["probe"] = null;};
                 if(node.mObjES){reqObj.params.objects["query_endstops"] = null;};
-                if(node.mObjTSCh){reqObj.params.objects["temperature_sensor chamber"] = null;};
+                if(node.mObjTSCh && node.TSChName){reqObj.params.objects[`temperature_sensor ${node.TSChName}`] = null;};
                 if(node.mObjHeatBed){reqObj.params.objects["heater_bed"] = null;};
                 if(node.mObjExFan){reqObj.params.objects["heater_fan extruder_fan"] = null;};
                 if(node.mObjTH){reqObj.params.objects["toolhead"] = null;};
@@ -303,8 +307,9 @@ module.exports = function(RED) {
                 if(node.mObjBMesh){reqObj.params.objects["bed_mesh"] = null;};
                 if(node.mObjPrStat){reqObj.params.objects["print_stats"] = null;};
                 if(node.mObjExt){reqObj.params.objects["extruder"] = null;};
-                if(node.mObjFilSen){reqObj.params.objects["filament_switch_sensor"] = null;};
+                if(node.mObjFilSen && node.FilSenName){reqObj.params.objects[`filament_switch_sensor ${node.FilSenName}`] = null;};
                 if(node.mObjDispStat){reqObj.params.objects["display_status"] = null;};
+                if(node.mObjGCMacro && node.GCMacroName){reqObj.params.objects[`gcode_macro ${node.GCMacroName}`] = null;};
                 node.moonNodeWS.send(JSON.stringify(reqObj));
                 return true;
             }catch(e){
