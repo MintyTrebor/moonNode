@@ -143,7 +143,6 @@ module.exports = function(RED) {
         this.normClose = false;
         this.printerReady = false;
         this.gotPrinterStatus = false;
-        this.gotPrinterObjects = false;
         this.subscribed = false;
         this.lastMsgTime = null;
         this.stopKeepAlive = false;
@@ -202,7 +201,7 @@ module.exports = function(RED) {
                 topic:"moonNodeModel", 
                 payload: null,
                 moonNode: {
-                    monitorError: "Restarting Websocket in 10 seconds : Reason = " + e
+                    monitorError: "Restarting Websocket : Reason = " + e
                 }
             };
             node.send([null, msg]);
@@ -210,7 +209,6 @@ module.exports = function(RED) {
             node.moonNodeFirstMsg = true;
             try{
                 node.printerReady = false;
-                node.gotPrinterObjects = false;
                 node.gotPrinterStatus = false;
                 node.subscribed = false;
                 node.gotMoonSub = false;
@@ -218,6 +216,7 @@ module.exports = function(RED) {
                 if(node.moonNodeWS){
                     node.moonNodeWS.terminate();
                 }
+                node.moonNodeWS = null;
             }catch{
                 ///
             }
@@ -227,7 +226,9 @@ module.exports = function(RED) {
                     setupMoonws();     
                 }, 10000);
             }
-            node.inRestart = false;
+            else{
+                node.inRestart = false;
+            }
         };
 
         var getPrinterStatus = function(){
@@ -238,11 +239,12 @@ module.exports = function(RED) {
                     "id": MoonID
                 }
                 node.moonNodeWS.send(JSON.stringify(reqObj));
+                //sendAlertMsg("Sent Printer Status Request");
                 return true;
             }catch(e){
                 if(!node.inRestart){
                     node.inRestart = true;
-                    restartWS("Error getting Moonraker Status Information: = " + e)
+                    restartWS("Error Sending Request for Moonraker Status Information: = " + e)
                 };
                 return false;
             }
@@ -254,23 +256,9 @@ module.exports = function(RED) {
                 if(fullList.result.state === "ready"){
                     return true;
                 }else{
+                    sendAlertMsg("Moonraker not ready. Will check again shortly. Status: = " + fullList.result.state);
                     return false;
                 }
-            }catch(e){
-                return false;
-            }
-        };
-
-        var getPrinterObjects = function(){
-            //sendAlertMsg("RUNNING getPrinterObjects");
-            try {                
-                var reqObj = {
-                    "jsonrpc": "2.0",
-                    "method": "printer.objects.list",
-                    "id": MoonID
-                }
-                node.moonNodeWS.send(JSON.stringify(reqObj));
-                return true;
             }catch(e){
                 return false;
             }
@@ -356,7 +344,7 @@ module.exports = function(RED) {
                 node.moonNodeWS = null;
             }
 
-            node.moonNodeWS.on('ping', heartbeat);
+            //node.moonNodeWS.on('ping', heartbeat);
             
             node.moonNodeWS.on('error', function (error){
                 node.osKey = null;
@@ -366,14 +354,15 @@ module.exports = function(RED) {
                 }
                 node.normClose = false;
                 node.printerReady = false;
+                node.gotPrinterStatus = false;
             });
             
             node.moonNodeWS.on('open', function open() {
-                heartbeat;
+                //heartbeat;
                 //Get the objects to use
                 node.gotMoonSub = false;
                 if(!node.printerReady && !node.gotPrinterStatus){
-                    sendAlertMsg("Opened Websocket Gettings Moonraker Status");
+                    sendAlertMsg("Opened Websocket - Gettings Moonraker Status");
                     node.gotPrinterStatus = getPrinterStatus();
                     node.inRestart = false;
                 }                
@@ -402,34 +391,17 @@ module.exports = function(RED) {
                         //sendAlertMsg("Moonraker Status: = " + JSON.stringify(data));
                         node.printerReady = checkIfPrinterReady(data);
                         if(!node.printerReady){
-                            node.gotPrinterStatus = getPrinterStatus();
-                        }
-                        return;
-                    }
-                    if(node.printerReady && !node.gotPrinterObjects){
-                        sendAlertMsg("Gettings Printer Objects");
-                        node.gotPrinterObjects = getPrinterObjects();
-                        if(!node.gotPrinterObjects){
-                            node.printerReady = false;
                             node.gotPrinterStatus = false;
-                            node.gotPrinterStatus = getPrinterStatus();
+                            //moonraker is responding but printer is not ready so check again in 10 seconds
+                            setTimeout(() => {  
+                                node.gotPrinterStatus = getPrinterStatus();     
+                            }, 10000);
                         }
                         return;
                     }
-                    if(node.printerReady && node.gotPrinterObjects && !node.gotMoonSub){
-                        var tmpRetObj = JSON.parse(data);
-                        var matchInPatch = jp.query(tmpRetObj, (`$..result.objects`));
-                        if(JSON.stringify(matchInPatch) != "[]"){
-                            //sendAlertMsg("Printer Objects: = " + JSON.stringify(data));
-                            node.gotMoonSub = setupMoonSubscription(data);
-                        }else{
-                            node.gotMoonSub = false;
-                        }
-                        //now we are in normal mode so setup keep alive
-                        if(!node.gotMoonSub){
-                            node.gotPrinterObjects = getPrinterObjects();  
-                            return;                           
-                        }
+                    if(node.printerReady && !node.gotMoonSub){
+                        node.gotMoonSub = setupMoonSubscription(data);
+                        return;
                     }
                     if(node.moonNodeFirstMsg && node.gotMoonSub && node.printerReady){
                         //This is the first data return from moonraker, so use the data to construct the model.
@@ -448,9 +420,10 @@ module.exports = function(RED) {
                             };
                             node.send([msg, null]);
                             node.moonNodeFirstMsg = false;
+                            return;
                         }
                         else{
-                            
+                            return;
                         }
                     } else if(!node.moonNodeFirstMsg && node.gotMoonSub && node.printerReady){
                         //merge the update with the model if required
@@ -470,21 +443,26 @@ module.exports = function(RED) {
                             node.send([msg, null]);
                             node.moonNodeFullModel = mergedModel;
                             mergedModel = null
+                            return;
                         }
                         else if(tmpFullModel.method == "notify_klippy_disconnected"){
                             bHasMsg = false;
                             if(!node.inRestart){
+                                node.printerReady = false;
+                                node.gotPrinterStatus = false;
                                 node.inRestart = true;
                                 restartWS("Klippy Disconnected");
                             }
-                            
+                            return;
                         }else if(tmpFullModel.method == "notify_klippy_shutdown"){
                             bHasMsg = false;
                             if(!node.inRestart){
+                                node.printerReady = false;
+                                node.gotPrinterStatus = false;
                                 node.inRestart = true;
                                 restartWS("Klippy Shutdown");
                             }
-                            
+                            return;
                         }
                     };
                 } else {
@@ -505,6 +483,21 @@ module.exports = function(RED) {
         //run the node
         if (node.server) {          
             if(node.autoStart){
+                // try{
+                //     if(node.moonNodeWS){
+                //         node.normClose = true;
+                //         node.moonNodeWS.close();
+                //     }
+                // }
+                // catch {
+                //     //do nothing
+                // }
+                node.nodeRun = true;
+                node.moonNodeFirstMsg = true;
+                node.printerReady = false;
+                node.gotPrinterStatus = false;
+                node.subscribed = false;
+                node.gotMoonSub = false;
                 setupMoonws();
             };
         } else {
@@ -532,7 +525,6 @@ module.exports = function(RED) {
                     node.nodeRun = true;
                     node.moonNodeFirstMsg = true;
                     node.printerReady = false;
-                    node.gotPrinterObjects = false;
                     node.gotPrinterStatus = false;
                     node.normClose = true;
                     node.subscribed = false;
@@ -574,10 +566,15 @@ module.exports = function(RED) {
         this.ws = require('ws');
         this.currMsg = null;
         this.osKey = null;
+        this.MoonID = null;
         var node = this;
-        const MoonID = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
+        //const MoonID = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
         const axios = require("axios");
         
+        function getMoonID() {
+            return Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
+        };
+
         var sendAlertMsg = function(e) {
             msg = {
                 topic:"moonNodeModel", 
@@ -643,6 +640,7 @@ module.exports = function(RED) {
             });
             
             node.moonNodeWS.on('open', function open() {
+                node.MoonID = getMoonID();
                 //Send the Command
                 var tmpPayload = {
                     "jsonrpc": "2.0",
@@ -656,6 +654,12 @@ module.exports = function(RED) {
                 if(node.stateless){
                     try{
                         node.moonNodeWS.close();
+                    }
+                    catch {
+                        //do nothing
+                    }
+                    try{
+                        node.moonNodeWS.terminate();
                     }
                     catch {
                         //do nothing
@@ -687,6 +691,12 @@ module.exports = function(RED) {
                         }
                         try{
                             node.moonNodeWS.close();
+                        }
+                        catch {
+                            //do nothing
+                                            }                        
+                        try{
+                            node.moonNodeWS.terminate();
                             return;
                         }
                         catch {
