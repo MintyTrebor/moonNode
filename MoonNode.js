@@ -483,15 +483,6 @@ module.exports = function(RED) {
         //run the node
         if (node.server) {          
             if(node.autoStart){
-                // try{
-                //     if(node.moonNodeWS){
-                //         node.normClose = true;
-                //         node.moonNodeWS.close();
-                //     }
-                // }
-                // catch {
-                //     //do nothing
-                // }
                 node.nodeRun = true;
                 node.moonNodeFirstMsg = true;
                 node.printerReady = false;
@@ -536,9 +527,9 @@ module.exports = function(RED) {
                     node.normClose = true;
                     
                     try{
-                        if(node.moonNodeWS){
+                        //if(node.moonNodeWS){
                             node.moonNodeWS.close();
-                        }
+                        //}
                     }catch{
                         //
                     }
