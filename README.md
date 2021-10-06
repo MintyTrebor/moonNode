@@ -5,6 +5,8 @@ Moonraker enables websocketed API access to Klipper, which is control software u
 
 MoonNode enables easy connection to Moonraker and constructs a model representing the current state of the Machine objects chosen for monitoring. The model is a JSON object and is constantly updated by Moonraker.
 
+MoonNode has been written to enable easy access to realtime printer/machine status data in NodeRed, which is useful for monitoring multiple printers/machines or integrating the printer/machine into an existing dashboard.
+
 **MoonNode has 4 nodes:**
 
  - **MoonNode-Connector** *(control node)* : Stores the mode & connection details enabling the web-socket connection to Moonraker.  
@@ -29,3 +31,7 @@ Changelog:
 0.0.14 -- Added filament sensor and display status to the list of monitored objects.  
 0.0.15 -- Added ability to set sensor & macro names for selected objects.  
 0.0.16 -- Fixed some issues with autostart and error recovery. 
+0.0.17 -- Fixed monitor not always stopping on receipt of "OFF" msg.
+
+
+
