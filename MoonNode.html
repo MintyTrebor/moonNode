@@ -115,110 +115,27 @@
         <input type="text" id="node-input-name" data-i18n="">
     </div>
     <div class="form-row">
-        <label for="node-input-server"><i class="fa fa-globe"></i><span data-i18n="moonNode-command.label.server"> moonNode WS (IP:Port)</span></label>
+        <label for="node-input-server"><i class="fa fa-globe"></i><span data-i18n="moonNode-monitor.label.server"> moonNode WS (IP:Port)</span></label>
         <input type="text" id="node-input-server" style="width: 70%"/>
     </div>
     <div class="form-row">
-        <label for="node-input-autoStart"><span data-i18n="moonNode-command.label.autoStart"> Auto Start</span></label>
-        <input type="checkbox" id="node-input-autoStart" value="false">
+        <label for="node-input-autoStart"><span data-i18n="moonNode-monitor.label.autoStart"> Auto Start</span></label>
+        <input type="checkbox" id="node-input-autoStart" checked="false">
     </div>
-    <p><b>Select Objects to Monitor</b></p>
+    <p><b>Select MoonRaker Objects to Monitor</b></p>
     <div class="form-row">
-        <label for="node-input-mObjPR"><span data-i18n="moonNode-command.label.mObjPR"> Pause Status</span></label>
-        <input type="checkbox" id="node-input-mObjPR" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjProbe"><span data-i18n="moonNode-command.label.mObjPR"> Probe</span></label>
-        <input type="checkbox" id="node-input-mObjProbe" value="false">
+        <select id="node-input-mObjSel" multiple style="width: 70%; min-height: 300px"></select><span>&nbsp;&nbsp;&nbsp;</span><button id="node-input-getMN">Refresh</button>      
     </div>
     <div class="form-row">
-        <label for="node-input-mObjES"><span data-i18n="moonNode-command.label.mObjES"> EndStops</span></label>
-        <input type="checkbox" id="node-input-mObjES" value="false">
+        <span style="width: 70%">&nbsp;(Use CTRL+Click to select multiple objects)&nbsp;</span>     
     </div>
     <div class="form-row">
-        <label for="node-input-mObjTSCh"><span data-i18n="moonNode-command.label.mObjTSCh"> Temp Sensor</span></label>
-        <input type="checkbox" id="node-input-mObjTSCh" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-TSChName"><i class="fa fa-tag"></i> <span data-i18n="common.label.TSChName"> Temp Sensor Name</span></label>
-        <input type="text" id="node-input-TSChName">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjHeatBed"><span data-i18n="moonNode-command.label.mObjHeatBed"> Heated Bed</span></label>
-        <input type="checkbox" id="node-input-mObjHeatBed" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjExFan"><span data-i18n="moonNode-command.label.mObjExFan"> Extruder Fan</span></label>
-        <input type="checkbox" id="node-input-mObjExFan" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjTH"><span data-i18n="moonNode-command.label.mObjTH"> toolhead</span></label>
-        <input type="checkbox" id="node-input-mObjTH" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjGMov"><span data-i18n="moonNode-command.label.mObjGMov"> gcode Move</span></label>
-        <input type="checkbox" id="node-input-mObjGMov" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjTSrPi"><span data-i18n="moonNode-command.label.mObjTSrPi"> Temps-rPi</span></label>
-        <input type="checkbox" id="node-input-mObjTSrPi" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjTHrPi"><span data-i18n="moonNode-command.label.mObjTHrPi"> Temps-Host</span></label>
-        <input type="checkbox" id="node-input-mObjTHrPi" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjVSDC"><span data-i18n="moonNode-command.label.mObjVDSC"> Virtual SD Card</span></label>
-        <input type="checkbox" id="node-input-mObjVDSC" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjSysStat"><span data-i18n="moonNode-command.label.mObjSysStat"> System Stats</span></label>
-        <input type="checkbox" id="node-input-mObjSysStat" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjITO"><span data-i18n="moonNode-command.label.mObjITO"> Idle TimeOut</span></label>
-        <input type="checkbox" id="node-input-mObjITO" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjFan"><span data-i18n="moonNode-command.label.mObjFan"> Fan</span></label>
-        <input type="checkbox" id="node-input-mObjFan" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjBMesh"><span data-i18n="moonNode-command.label.mObjBMesh"> Bed Mesh</span></label>
-        <input type="checkbox" id="node-input-mObjBMesh" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjPrStat"><span data-i18n="moonNode-command.label.mObjPrStat"> Print Stats</span></label>
-        <input type="checkbox" id="node-input-mObjPrStat" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjExt"><span data-i18n="moonNode-command.label.mObjExt"> Extruder</span></label>
-        <input type="checkbox" id="node-input-mObjExt" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjFilSen"><span data-i18n="moonNode-command.label.mObjFilSen"> Filament Sensor</span></label>
-        <input type="checkbox" id="node-input-mObjFilSen" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-FilSenName"><i class="fa fa-tag"></i> <span data-i18n="common.label.FilSenName"> Filament Sensor Name</span></label>
-        <input type="text" id="node-input-FilSenName">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjDispStat"><span data-i18n="moonNode-command.label.mObjDispStat"> Display Status</span></label>
-        <input type="checkbox" id="node-input-mObjDispStat" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-mObjGCMacro"><span data-i18n="moonNode-command.label.mObjGCMacro"> GCode Macro</span></label>
-        <input type="checkbox" id="node-input-mObjGCMacro" value="false">
-    </div>
-    <div class="form-row">
-        <label for="node-input-GCMacroName"><i class="fa fa-tag"></i> <span data-i18n="common.label.GCMacroName"> GCode Macro Name</span></label>
-        <input type="text" id="node-input-GCMacroName">
+        <input type="hidden" id="node-input-mObjList">
     </div>
 </script>
 
 <script type="text/html" data-help-name="moonNode-monitor">
-    <p>Connects to Moonraker WebSocket</p>
+    <p>Connects to Moonraker WebSocket, and subscribes to the objects selected.</p>
     
     <h3>Properties</h3>
     <dl class="message-properties">
@@ -262,14 +179,19 @@
          </ol>
     
     <h3>Details</h3>
-        <p>This is the main node, providing the connection to moonNode.</p><br>
+        <p>This is the main node, which creates the connection to MoonRaker.</p><br>
         <p>Only 1 Monitor node should be deployed per node-red instance, to avoid creating too many sessions.
             A single monitor node can provide updates to any other flows using the 
-            'Link In' & 'Link Out' standard nodes.</p>
+            'Link In' & 'Link Out' standard nodes.</p><br>
+        <p>Select the MoonRaker WS server(or add a new one), and click the refresh button to see the list of objects available to select. MoonRaker must be reachable on the network to retrieve a list of objects. The objects retrieved will be a compilation of standard MoonRaker objects and ones unique to your MoonRaker instance.</p><br>
+        <p></p>
     
     <h3>References</h3>
         <ul>
             <li><a href="https://github.com/MintyTrebor/moonNode">GitHub</a> See the wiki for more information</li>
+        </ul>
+        <ul>
+            <li><a href="https://moonraker.readthedocs.io/en/latest/printer_objects/">MoonRaker</a> Object Documentation Reference</li>
         </ul>
 </script>
 
@@ -279,7 +201,7 @@
         <input type="text" id="node-input-name" data-i18n="">
     </div>
     <div class="form-row">
-        <label for="node-input-server"><i class="fa fa-globe"></i><span data-i18n="moonNode-command.label.server"> Moonraker IP</span></label>
+        <label for="node-input-server"><i class="fa fa-globe"></i><span data-i18n="moonNode-monitor.label.server"> Moonraker IP</span></label>
         <input type="text" id="node-input-server" style="width: 70%"/>
     </div>
     <div class="form-row">
@@ -367,30 +289,9 @@
         defaults: {
             name: {value:"moonNode Monitor"},
             server: {value:"", type:"moonNode-connector", required:true},
-            autoStart : {value: "false"},
-            mObjPR : {value: "false"},
-            mObjProbe : {value: "false"},
-            mObjES : {value: "false"},
-            mObjTSCh : {value: "false"},
-            TSChName : {value: ""},
-            mObjHeatBed : {value: "false"},
-            mObjExFan : {value: "false"},
-            mObjTH : {value: "false"},
-            mObjGMov : {value: "false"},
-            mObjTSrPi : {value: "false"},
-            mObjTHrPi : {value: "false"},
-            mObjVDSC : {value: "false"},
-            mObjSysStat : {value: "false"},
-            mObjITO : {value: "false"},
-            mObjFan : {value: "false"},
-            mObjBMesh : {value: "false"},
-            mObjPrStat : {value: "false"},
-            mObjExt : {value: "false"},
-            mObjFilSen : {value: "false"},
-            FilSenName : {value: ""},
-            mObjDispStat : {value: "false"},
-            mObjGCMacro : {value: "false"},
-            GCMacroName : {value: ""}
+            autoStart : {value: false},
+            mObjSel : {value: null},
+            mObjList: {value: "{objects:[]}"}
         },
         inputs:1,
         outputs:2,
@@ -405,13 +306,69 @@
             var node = this;
             var previousValueType = {value:"prev",label:this._("moonNode-monitor.previous"),hasValue:false};
             var andLabel = this._("moonNode-monitor.and");
-            var caseLabel = this._("moonNode-monitor.ignorecase");                
+            var caseLabel = this._("moonNode-monitor.ignorecase");
+            $("#node-input-getMN").click(function() {
+                if($("#node-input-server option:selected").text() != "Add new moonNode Connector..."){
+                    getMRSubs();
+                }
+            });
+            $("#node-input-server").change(function() {
+                if($("#node-input-server option:selected").text() != "Add new moonNode Connector..."){
+                    $("#node-input-getMN").prop('disabled', false);
+                }else{
+                    $("#node-input-getMN").prop('disabled', true);
+                }
+            });
+            //disable the refresh button if no MRServer selected
+            if($("#node-input-server option:selected").text() == "Add new moonNode Connector..."){
+                $("#node-input-getMN").prop('disabled', true);
+            };
+            //construct the subscription selection
+            if(this.mObjSel){
+                //the user has previoulsy got and set objects from MR so retrieve the existing objects
+                var tmpConstruct3 = "";
+                var mObjListJSON = JSON.parse($("#node-input-mObjList").val());
+                $("#node-input-mObjSel").empty();
+                for(var b=0 in mObjListJSON.objects){
+                    if(node.mObjSel.find(element => element == mObjListJSON.objects[b].object)){
+                        tmpConstruct3 = `<option value="${mObjListJSON.objects[b].object}" selected>${mObjListJSON.objects[b].object}</option>`;
+                    }else{
+                        tmpConstruct3 = `<option value="${mObjListJSON.objects[b].object}">${mObjListJSON.objects[b].object}</option>`;
+                    }
+                    $("#node-input-mObjSel").append(tmpConstruct3);
+                }
+                
+            };
+            
+            async function getMRSubs(){
+                return $.getJSON('MRAPISub',{mnAddr: $("#node-input-server option:selected").text()},function(data) {
+                    var tmpConstruct2 = "";
+                    $("#node-input-mObjSel").empty();
+                    if(data.objects){
+                        for(var c=0 in data.objects){
+                            tmpConstruct2 = `<option value="${data.objects[c].object}">${data.objects[c].object}</option>`;
+                            $("#node-input-mObjSel").append(tmpConstruct2);
+                        }
+                        $("#node-input-mObjList").val(JSON.stringify(data));
+                        return true;
+                    }else{
+                        return false;
+                    }
+                });
+            }
+
+            
+
+            
+
         },
         paletteLabel: function() {
             return "moonNode Monitor";
         },
         inputLabels: "Monitor Input",
         outputLabels: ["Model Out", "Connection Msgs"]
+
+        
     });
 
     RED.nodes.registerType('moonNode-command', {
@@ -435,8 +392,8 @@
         oneditprepare: function() {
             var node = this;
             var previousValueType = {value:"prev",label:this._("moonNode-command.previous"),hasValue:false};
-            var andLabel = this._("moonNode-command.and");
-            var caseLabel = this._("moonNode-command.ignorecase");                
+            var andLabel = this._("moonNode-monitor.and");
+            var caseLabel = this._("moonNode-monitor.ignorecase");                
         },
         paletteLabel: function() {
             return "moonNode CMD";

@@ -32,6 +32,8 @@ Changelog:
 0.0.15 -- Added ability to set sensor & macro names for selected objects.  
 0.0.16 -- Fixed some issues with autostart and error recovery. 
 0.0.17 -- Fixed monitor not always stopping on receipt of "OFF" msg.
+0.0.18 -- Changed Monitor Node to get list of subscribable objects from MoonRaker directly, fixed issue with CMD node crashing.
+# NOTE: If upgrading to V0.0.18 you will need to re-configure all deployed Monitor Nodes.  
 
 
 

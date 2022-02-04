@@ -1,4 +1,5 @@
 const { SSL_OP_EPHEMERAL_RSA } = require('constants');
+var MNSvrIP = "";
 
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
@@ -16,15 +17,34 @@ const { SSL_OP_EPHEMERAL_RSA } = require('constants');
  * limitations under the License.
  **/
 module.exports = function(RED) {
+    
+    RED.httpAdmin.get("/MRAPISub", RED.auth.needsPermission('moonNode-event.read'), async function(req,res) {
+        //console.log(req.query.mnAddr)
+        const axiosSvr = require("axios");
+        const SubObjGet = await axiosSvr.get(`http://${req.query.mnAddr}/printer/objects/list`).then(res => res.data);
+        const SubObj = await SubObjGet;
+        if(SubObj){
+            var tmpObj = {objects: []};
+            var cn = 0;
+            var MNObjects = SubObj.result.objects;
+            for(cn in MNObjects){
+                tmpObj.objects.push({object: MNObjects[cn], selected: false});
+            }
+            res.json(tmpObj);
+        }
+    });
+    
     function moonNodeConnectorNode(config) {
         RED.nodes.createNode(this,config);
         this.server = config.server;
+        MNSvrIP = this.server;
     };
     RED.nodes.registerType("moonNode-connector",moonNodeConnectorNode,{
         credentials: {
             mrapi: {type:"text"}
         }
     });
+
 
     function moonNodeEventNode(n) {
         RED.nodes.createNode(this, n);
@@ -110,29 +130,7 @@ module.exports = function(RED) {
         this.wsurl = `ws://${this.server.server}/websocket`;
         this.mrapi = this.server.credentials.mrapi;
         this.autoStart = config.autoStart;
-        this.mObjPR = config.mObjPR;
-        this.mObjProbe = config.mObjProbe;
-        this.mObjES = config.mObjES;
-        this.mObjTSCh = config.mObjTSCh;
-        this.TSChName = config.TSChName;
-        this.mObjHeatBed = config.mObjHeatBed;
-        this.mObjExFan = config.mObjExFan;
-        this.mObjTH = config.mObjTH;
-        this.mObjGMov = config.mObjGMov;
-        this.mObjTSrPi = config.mObjTSrPi;
-        this.mObjTHrPi = config.mObjTHrPi;
-        this.mObjVDSC = config.mObjVDSC;
-        this.mObjSysStat = config.mObjSysStat;
-        this.mObjITO = config.mObjITO;
-        this.mObjFan = config.mObjFan;
-        this.mObjBMesh = config.mObjBMesh;
-        this.mObjPrStat = config.mObjPrStat;
-        this.mObjExt = config.mObjExt;
-        this.mObjDispStat = config.mObjDispStat;
-        this.mObjFilSen = config.mObjFilSen;
-        this.FilSenName = config.FilSenName;
-        this.mObjGCMacro = config.mObjGCMacro;
-        this.GCMacroName = config.GCMacroName;
+        this.mObjSel = config.mObjSel;
         this.ws = require('ws');
         this.moonNodeFirstMsg = true;
         this.moonNodeFullModel = null;
@@ -153,10 +151,13 @@ module.exports = function(RED) {
         const merge = require('deepmerge')
         const axios = require("axios");
         const jp = require('jsonpath');
+        MNSvrIP = this.server;
 
         function getMoonID() {
             return Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
         };
+
+        
 
         function heartbeat() {
             clearTimeout(this.pingTimeout);
@@ -278,28 +279,16 @@ module.exports = function(RED) {
                     "id": MoonID
                 }
                 var ni = null;
-                if(node.mObjPR){reqObj.params.objects["pause_resume"] = null;};
-                if(node.mObjProbe){reqObj.params.objects["probe"] = null;};
-                if(node.mObjES){reqObj.params.objects["query_endstops"] = null;};
-                if(node.mObjTSCh && node.TSChName){reqObj.params.objects[`temperature_sensor ${node.TSChName}`] = null;};
-                if(node.mObjHeatBed){reqObj.params.objects["heater_bed"] = null;};
-                if(node.mObjExFan){reqObj.params.objects["heater_fan extruder_fan"] = null;};
-                if(node.mObjTH){reqObj.params.objects["toolhead"] = null;};
-                if(node.mObjGMov){reqObj.params.objects["gcode_move"] = null;};
-                if(node.mObjTSrPi){reqObj.params.objects["temperature_sensor raspberry_pi"] = null;};
-                if(node.mObjTHrPi){reqObj.params.objects["temperature_host raspberry_pi"] = null;};
-                if(node.mObjVDSC){reqObj.params.objects["virtual_sdcard"] = null;};
-                if(node.mObjSysStat){reqObj.params.objects["system_stats"] = null;};
-                if(node.mObjITO){reqObj.params.objects["idle_timeout"] = null;};
-                if(node.mObjFan){reqObj.params.objects["fan"] = null;};
-                if(node.mObjBMesh){reqObj.params.objects["bed_mesh"] = null;};
-                if(node.mObjPrStat){reqObj.params.objects["print_stats"] = null;};
-                if(node.mObjExt){reqObj.params.objects["extruder"] = null;};
-                if(node.mObjFilSen && node.FilSenName){reqObj.params.objects[`filament_switch_sensor ${node.FilSenName}`] = null;};
-                if(node.mObjDispStat){reqObj.params.objects["display_status"] = null;};
-                if(node.mObjGCMacro && node.GCMacroName){reqObj.params.objects[`gcode_macro ${node.GCMacroName}`] = null;};
-                node.moonNodeWS.send(JSON.stringify(reqObj));
-                return true;
+                if(node.mObjSel){
+                    for(var l=0 in node.mObjSel){
+                        reqObj.params.objects[`${node.mObjSel[l]}`] = null;
+                    }
+                    node.moonNodeWS.send(JSON.stringify(reqObj));
+                    return true;
+                }else {
+                    return false;
+                }
+                
             }catch(e){
                 return false;
             }
@@ -497,11 +486,10 @@ module.exports = function(RED) {
 
         node.on('close', function() {
             // close ws
+            node.nodeRun = false;    
+            node.normClose = true;
             try{
-                if(node.moonNodeWS){
-                    node.normClose = true;
-                    node.moonNodeWS.close();
-                }
+                node.moonNodeWS.close();
             }
             catch {
                 //do nothing
@@ -559,7 +547,6 @@ module.exports = function(RED) {
         this.osKey = null;
         this.MoonID = null;
         var node = this;
-        //const MoonID = Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
         const axios = require("axios");
         
         function getMoonID() {
