@@ -631,7 +631,6 @@ module.exports = function(RED) {
             });
             
             node.moonNodeWS.on('open', function open() {
-                node.MoonID = getMoonID();
                 //Send the Command
                 var tmpPayload = {
                     "jsonrpc": "2.0",
@@ -639,7 +638,7 @@ module.exports = function(RED) {
                     "params": {
                         "script": strCMD
                     },
-                    "id": MoonID
+                    "id": getMoonID(),
                 }
                 node.moonNodeWS.send(JSON.stringify(tmpPayload));
                 if(node.stateless){
