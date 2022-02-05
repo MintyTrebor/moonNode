@@ -130,6 +130,9 @@
         <span style="width: 70%">&nbsp;(Use CTRL+Click to select multiple objects)&nbsp;</span>     
     </div>
     <div class="form-row">
+        <span id="node-input-mObjMsg" style="color: red"></span>
+    </div>
+    <div class="form-row">
         <input type="hidden" id="node-input-mObjList">
     </div>
 </script>
@@ -290,7 +293,7 @@
             name: {value:"moonNode Monitor"},
             server: {value:"", type:"moonNode-connector", required:true},
             autoStart : {value: false},
-            mObjSel : {value: null},
+            mObjSel : {value: null, required: true},
             mObjList: {value: "{objects:[]}"}
         },
         inputs:1,
@@ -309,6 +312,7 @@
             var caseLabel = this._("moonNode-monitor.ignorecase");
             $("#node-input-getMN").click(function() {
                 if($("#node-input-server option:selected").text() != "Add new moonNode Connector..."){
+                    $("#node-input-mObjMsg").text("");
                     getMRSubs();
                 }
             });
@@ -341,9 +345,12 @@
             };
             
             async function getMRSubs(){
-                return $.getJSON('MRAPISub',{mnAddr: $("#node-input-server option:selected").text()},function(data) {
+                return $.getJSON('MRAPISub',{mnSvrID: $("#node-input-server").val()},function(data) {
                     var tmpConstruct2 = "";
                     $("#node-input-mObjSel").empty();
+                    if(data.error){
+                        $("#node-input-mObjMsg").text(data.error);
+                    }
                     if(data.objects){
                         for(var c=0 in data.objects){
                             tmpConstruct2 = `<option value="${data.objects[c].object}">${data.objects[c].object}</option>`;

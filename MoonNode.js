@@ -1,5 +1,4 @@
 const { SSL_OP_EPHEMERAL_RSA } = require('constants');
-var MNSvrIP = "";
 
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
@@ -19,25 +18,60 @@ var MNSvrIP = "";
 module.exports = function(RED) {
     
     RED.httpAdmin.get("/MRAPISub", RED.auth.needsPermission('moonNode-event.read'), async function(req,res) {
-        //console.log(req.query.mnAddr)
         const axiosSvr = require("axios");
-        const SubObjGet = await axiosSvr.get(`http://${req.query.mnAddr}/printer/objects/list`).then(res => res.data);
-        const SubObj = await SubObjGet;
-        if(SubObj){
-            var tmpObj = {objects: []};
-            var cn = 0;
-            var MNObjects = SubObj.result.objects;
-            for(cn in MNObjects){
-                tmpObj.objects.push({object: MNObjects[cn], selected: false});
+        var mnSvrNode = RED.nodes.getNode(req.query.mnSvrID);
+        var mnOneShotToken = null;
+        if(mnSvrNode.credentials.mrapi){
+            //get a oneshot token as API key exists
+            try{
+                mnOneShotToken = await axiosSvr({
+                    method: "GET",
+                    url: `http://${mnSvrNode.server}/access/oneshot_token`,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-API-Key": mnSvrNode.credentials.mrapi // API KEY
+                    }
+                }).then(res => res.data.result);
+            }catch{
+                res.json({error: "Unable to retrieve token. Check API Key & MoonRaker IP:Port are correct"});
+                return;
             }
-            res.json(tmpObj);
+        };
+        try{
+            if(mnOneShotToken){
+                const SubObjGet = await axiosSvr.get(`http://${mnSvrNode.server}/printer/objects/list?token=${mnOneShotToken}`).then(res => res.data);
+                const SubObj = await SubObjGet;
+                if(SubObj){
+                    var tmpObj = {objects: []};
+                    var cn = 0;
+                    var MNObjects = SubObj.result.objects;
+                    for(cn in MNObjects){
+                        tmpObj.objects.push({object: MNObjects[cn], selected: false});
+                    }
+                    res.json(tmpObj);
+                }
+            }else{
+                const SubObjGet = await axiosSvr.get(`http://${mnSvrNode.server}/printer/objects/list`).then(res => res.data);
+                const SubObj = await SubObjGet;
+                if(SubObj){
+                    var tmpObj = {objects: []};
+                    var cn = 0;
+                    var MNObjects = SubObj.result.objects;
+                    for(cn in MNObjects){
+                        tmpObj.objects.push({object: MNObjects[cn], selected: false});
+                    }
+                    res.json(tmpObj);
+                }
+            }
+        }catch{
+            res.json({error: "Failed to retrieve data from MoonRaker. Check MoonRaker is available & the IP:Port are correct. If you have enabled Authorisation then ensure you have set the API key."});
         }
+        
     });
     
     function moonNodeConnectorNode(config) {
         RED.nodes.createNode(this,config);
         this.server = config.server;
-        MNSvrIP = this.server;
     };
     RED.nodes.registerType("moonNode-connector",moonNodeConnectorNode,{
         credentials: {
@@ -151,7 +185,6 @@ module.exports = function(RED) {
         const merge = require('deepmerge')
         const axios = require("axios");
         const jp = require('jsonpath');
-        MNSvrIP = this.server;
 
         function getMoonID() {
             return Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
