@@ -34,7 +34,7 @@ Changelog:
 0.0.17 -- Fixed monitor not always stopping on receipt of "OFF" msg.  
 0.0.18 -- Changed Monitor Node to get list of subscribable objects from MoonRaker directly, fixed issue with CMD node crashing.  
 0.1.01 -- Added Status Indicators to Monitor Node.  
-### NOTE: If upgrading from a version prior to V0.0.18 you will need to re-configure all deployed Monitor Nodes.  
+**NOTE: If upgrading from a version prior to V0.0.18 you will need to re-configure all deployed Monitor Nodes.**  
 
 
 
