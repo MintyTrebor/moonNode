@@ -604,6 +604,7 @@ module.exports = function(RED) {
         this.currMsg = null;
         this.osKey = null;
         this.MoonID = null;
+        this.wsOpen = false;
         var node = this;
         const axios = require("axios");
         
@@ -633,124 +634,130 @@ module.exports = function(RED) {
 
         var sendCmdByWS = async function(strCMD) {                
             //Make an HTTP GET request to get one shot token if API has been provided
-            if(node.mrapi){
-                //sendAlertMsg("Getting one shot key with API key = " + node.mrapi);
+            if(node.wsOpen){
+                if (node.moonNodeWS.readyState === 1) {
+                    //Send the Command
+                    var tmpPayload = {
+                        "jsonrpc": "2.0",
+                        "method": "printer.gcode.script",
+                        "params": {
+                            "script": strCMD
+                        },
+                        "id": getMoonID(),
+                    }
+                    //console.log("Already Open")
+                    node.moonNodeWS.send(JSON.stringify(tmpPayload));
+                }
+            }else {
+                if(node.mrapi){
+                    //sendAlertMsg("Getting one shot key with API key = " + node.mrapi);
+                    try{
+                        const getOneShotKey = await axios({
+                            method: "GET",
+                            url: `http://${node.server.server}/access/oneshot_token`,
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-API-Key": node.mrapi // API KEY
+                            }
+                        });
+                        node.osKey = getOneShotKey.data.result;
+                    }
+                    catch(e){
+                        node.osKey = null;
+                        sendAlertMsg("Failed to connect / authenticate. Check API Key : " + e);
+                        return;
+                    }
+                } 
                 try{
-                    const getOneShotKey = await axios({
-                        method: "GET",
-                        url: `http://${node.server.server}/access/oneshot_token`,
-                        headers: {
-                            "Content-Type": "application/json",
-                            "X-API-Key": node.mrapi // API KEY
-                        }
-                    });
-                    node.osKey = getOneShotKey.data.result;
+                    if(node.osKey){
+                        //sendAlertMsg("Opening WS with OS key = " + node.osKey);
+                        node.moonNodeWS = new node.ws(`${node.wsurl}?token=${node.osKey}`);
+                    }else {
+                        //sendAlertMsg("Opening WS without OS key")
+                        node.moonNodeWS = new node.ws(node.wsurl);
+                    }
                 }
                 catch(e){
                     node.osKey = null;
-                    sendAlertMsg("Failed to connect / authenticate. Check API Key : " + e);
+                    sendAlertMsg("Error opening websocket. The command has not been sent. Error: " + e);
+                    node.moonNodeWS.close();
                     return;
                 }
-            } 
-            try{
-                if(node.osKey){
-                    //sendAlertMsg("Opening WS with OS key = " + node.osKey);
-                    node.moonNodeWS = new node.ws(`${node.wsurl}?token=${node.osKey}`);
-                }else {
-                    //sendAlertMsg("Opening WS without OS key")
-                    node.moonNodeWS = new node.ws(node.wsurl);
-                }
-            }
-            catch(e){
-                node.osKey = null;
-                sendAlertMsg("Error opening websocket. The command has not been sent. Error: " + e);
-                node.moonNodeWS.close();
-                return;
-            }
-            
-            node.moonNodeWS.on('error', function (error){
-                node.osKey = null;
-                sendAlertMsg("WebSocket Error. The command has not been sent. Error: " + error);
-                node.moonNodeWS.close();
-                return;
-            });
-            
-            node.moonNodeWS.on('open', function open() {
-                //Send the Command
-                var tmpPayload = {
-                    "jsonrpc": "2.0",
-                    "method": "printer.gcode.script",
-                    "params": {
-                        "script": strCMD
-                    },
-                    "id": getMoonID(),
-                }
-                node.moonNodeWS.send(JSON.stringify(tmpPayload));
-                if(node.stateless){
-                    try{
-                        node.moonNodeWS.close();
+                
+                node.moonNodeWS.on('error', function (error){
+                    node.osKey = null;
+                    sendAlertMsg("WebSocket Error. The command has not been sent. Error: " + error);
+                    node.moonNodeWS.close();
+                    node.wsOpen = false;
+                    return;
+                });
+                
+                node.moonNodeWS.on('open', function open() {
+                    //Send the Command
+                    node.wsOpen = true;
+                    var tmpPayload = {
+                        "jsonrpc": "2.0",
+                        "method": "printer.gcode.script",
+                        "params": {
+                            "script": strCMD
+                        },
+                        "id": getMoonID(),
                     }
-                    catch {
-                        //do nothing
-                    }
-                    try{
-                        node.moonNodeWS.terminate();
-                    }
-                    catch {
-                        //do nothing
-                    }
-                    if(node.currMsg.hasOwnProperty('moonNode')){
-                        node.currMsg.moonNode.cmdSent = strCMD;
-                        node.currMsg.moonNode.cmdResponse = "Not Applicable : Stateless mode enabled";
-                    } else {
-                        node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": "Not Applicable : Stateless mode enabled"};
-                    }
-                    node.send([node.currMsg, null, null]);
-                }
-            });
-
-            node.moonNodeWS.on('message', function incoming(data) {
-                var tmpData = JSON.parse(data);
-                if(!node.stateless){
-                    if(tmpData.hasOwnProperty('result') || tmpData.hasOwnProperty('error')){
-                        if (node.currMsg.hasOwnProperty('moonNode')){
-                            node.currMsg.moonNode.cmdSent = strCMD;
-                            node.currMsg.moonNode.cmdResponse = tmpData;
-                        } else {
-                            node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": tmpData};
-                        }
-                        if(tmpData.hasOwnProperty('error')){
-                            node.send([null, null, node.currMsg]);
-                        }else {
-                        node.send([node.currMsg, null, null]);
-                        }
+                    node.moonNodeWS.send(JSON.stringify(tmpPayload));
+                    if(node.stateless){
                         try{
+                            node.wsOpen = false;
                             node.moonNodeWS.close();
                         }
                         catch {
                             //do nothing
-                                            }                        
+                        }
                         try{
+                            node.wsOpen = false;
                             node.moonNodeWS.terminate();
-                            return;
                         }
                         catch {
                             //do nothing
-                            return;
                         }
-                    }else if(tmpData.hasOwnProperty('method')) {
-                        if(tmpData.method == "notify_gcode_response"){
+                        if(node.currMsg.hasOwnProperty('moonNode')){
+                            node.currMsg.moonNode.cmdSent = strCMD;
+                            node.currMsg.moonNode.cmdResponse = "Not Applicable : Stateless mode enabled";
+                        } else {
+                            node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": "Not Applicable : Stateless mode enabled"};
+                        }
+                        node.send([node.currMsg, null, null]);
+                    }
+                });
+
+                node.moonNodeWS.on('message', function incoming(data) {
+                    var tmpData = JSON.parse(data);
+                    if(!node.stateless){
+                        if(tmpData.hasOwnProperty('result') || tmpData.hasOwnProperty('error')){
                             if (node.currMsg.hasOwnProperty('moonNode')){
                                 node.currMsg.moonNode.cmdSent = strCMD;
                                 node.currMsg.moonNode.cmdResponse = tmpData;
                             } else {
                                 node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": tmpData};
                             }
-                            node.send([null, node.currMsg, null]);
+                            if(tmpData.hasOwnProperty('error')){
+                                node.send([null, null, node.currMsg]);
+                            }else {
+                            node.send([node.currMsg, null, null]);
+                            }
+                        }else if(tmpData.hasOwnProperty('method')) {
+                            if(tmpData.method == "notify_gcode_response"){
+                                if (node.currMsg.hasOwnProperty('moonNode')){
+                                    node.currMsg.moonNode.cmdSent = strCMD;
+                                    node.currMsg.moonNode.cmdResponse = tmpData;
+                                } else {
+                                    node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": tmpData};
+                                }
+                                node.send([null, node.currMsg, null]);
+                            }
                         }
                     }
-                }
-            });
+                });
+            }
         };
         
         var sndCommand = function(msg) {
@@ -779,6 +786,7 @@ module.exports = function(RED) {
         node.on('close', function() {
             // close ws
             try{
+                node.wsOpen = false;
                 node.moonNodeWS.close();
             }
             catch {
