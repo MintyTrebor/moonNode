@@ -763,9 +763,12 @@ module.exports = function(RED) {
         var sndCommand = function(msg) {
             if (node.server) {
                 var strCMD = null;
-
-                if (msg.payload.hasOwnProperty('cmd')){
-                    strCMD = msg.payload.cmd;
+                if (msg.hasOwnProperty('payload')){
+                    if (msg.payload.hasOwnProperty('cmd')){
+                        strCMD = msg.payload.cmd;
+                    } else {
+                        strCMD = node.command;
+                    }
                 } else {
                     strCMD = node.command;
                 }
