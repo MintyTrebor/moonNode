@@ -21,21 +21,30 @@ module.exports = function(RED) {
         const axiosSvr = require("axios");
         var mnSvrNode = RED.nodes.getNode(req.query.mnSvrID);
         var mnOneShotToken = null;
-        if(mnSvrNode.credentials.mrapi){
-            //get a oneshot token as API key exists
-            try{
-                mnOneShotToken = await axiosSvr({
-                    method: "GET",
-                    url: `http://${mnSvrNode.server}/access/oneshot_token`,
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-API-Key": mnSvrNode.credentials.mrapi // API KEY
-                    }
-                }).then(res => res.data.result);
-            }catch{
-                res.json({error: "Unable to retrieve token. Check API Key & MoonRaker IP:Port are correct"});
-                return;
-            }
+        if(mnSvrNode.hasOwnProperty('credentials')){
+            if(mnSvrNode.credentials.hasOwnProperty('mrapi')){
+                if(mnSvrNode.credentials.mrapi){
+                    if(!hasWhiteSpace(mnSvrNode.credentials.mrapi)){
+                        //get a oneshot token as API key exists
+                        try{
+                            mnOneShotToken = await axiosSvr({
+                                method: "GET",
+                                url: `http://${mnSvrNode.server}/access/oneshot_token`,
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-API-Key": mnSvrNode.credentials.mrapi // API KEY
+                                }
+                            }).then(res => res.data.result);
+                        }catch{
+                            res.json({error: "Unable to retrieve token. Check API Key & MoonRaker IP:Port are correct"});
+                            return;
+                        }
+                    } else{
+                        res.json({error: "Invalid API Key"});
+                        return;
+                    }    
+                };
+            };
         };
         try{
             if(mnOneShotToken){
@@ -79,6 +88,9 @@ module.exports = function(RED) {
         }
     });
 
+    function hasWhiteSpace(s){
+        return /\s/g.test(s);
+    }
 
     function moonNodeEventNode(n) {
         RED.nodes.createNode(this, n);

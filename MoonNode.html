@@ -93,8 +93,13 @@
         <input type="text" id="node-config-input-server" style="width: 70%">
     </div>
     <div class="form-row">
-        <label for="node-config-input-mrapi"><i class="fa fa-bookmark"></i> Moonraker API</label>
+        <label for="node-config-input-mrapi"><i class="fa fa-bookmark"></i> API Key</label>
         <input type="text" id="node-config-input-mrapi" style="width: 70%">
+    </div>
+    <div class="form-row">
+        <p>Note: If you update an existing connection's parameters</p>
+        <p>you must deploy the flow before using the connection,</p>
+        <p>or refreshing MoonRaker objects list</p>
     </div>
 </script>
 
@@ -103,6 +108,7 @@
     
     <h3>Details</h3>
         <p>Enter the IP address & port of the Moonraker API. By default the moonraker api is on port 7125</p> 
+        <p>If you have enabled authorization in Moonraker then enter the API key to authorise the connection</p>
     <h3>References</h3>
         <ul>
             <li><a href="https://github.com/MintyTrebor/moonNode">GitHub</a> See the wiki for more information</li>
