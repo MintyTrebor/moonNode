@@ -1,4 +1,5 @@
 const { SSL_OP_EPHEMERAL_RSA } = require('constants');
+const { resolve } = require('path');
 
 /**
  * Copyright JS Foundation and other contributors, http://js.foundation
@@ -617,163 +618,17 @@ module.exports = function(RED) {
         this.osKey = null;
         this.MoonID = null;
         this.wsOpen = false;
+        this.cmdArr = [];
+        this.moonNodeWS = null;
+        this.sndMsg1 = null;
+        this.sndMsg2 = null;
+        this.sndMsg3 = null;
+        this.msgQueue = [];
         var node = this;
         const axios = require("axios");
         
-        function getMoonID() {
-            return Math.floor(Math.random() * (99999 - 10000 + 1)) + 10000;
-        };
-
-        var sendAlertMsg = function(e) {
-            msg = {
-                topic:"moonNodeModel", 
-                payload: null,
-                moonNode: {
-                    Alert: "Reason = " + e
-                }
-            };
-            node.send([null, null, msg]);
-        };
-        
-        var failedCMD = function(e, msg) {
-            if (typeof msg.moonNode !== "undefined"){
-                msg.moonNode.cmdSent = "ERROR: No Moonraker server defined, or cannot connect. Command has not been sent! : " + e;
-            } else {
-                msg.moonNode = {cmdSent: "ERROR: No Moonraker server defined, or cannot connect. Command has not been sent! : " + e};
-            }
-            node.send([null, null, msg]);
-        };
-
-        var sendCmdByWS = async function(strCMD) {                
-            //Make an HTTP GET request to get one shot token if API has been provided
-            if(node.wsOpen){
-                if (node.moonNodeWS.readyState === 1) {
-                    //Send the Command
-                    var tmpPayload = {
-                        "jsonrpc": "2.0",
-                        "method": "printer.gcode.script",
-                        "params": {
-                            "script": strCMD
-                        },
-                        "id": getMoonID(),
-                    }
-                    //console.log("Already Open")
-                    node.moonNodeWS.send(JSON.stringify(tmpPayload));
-                }
-            }else {
-                if(node.mrapi){
-                    //sendAlertMsg("Getting one shot key with API key = " + node.mrapi);
-                    try{
-                        const getOneShotKey = await axios({
-                            method: "GET",
-                            url: `http://${node.server.server}/access/oneshot_token`,
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-API-Key": node.mrapi // API KEY
-                            }
-                        });
-                        node.osKey = getOneShotKey.data.result;
-                    }
-                    catch(e){
-                        node.osKey = null;
-                        sendAlertMsg("Failed to connect / authenticate. Check API Key : " + e);
-                        return;
-                    }
-                } 
-                try{
-                    if(node.osKey){
-                        //sendAlertMsg("Opening WS with OS key = " + node.osKey);
-                        node.moonNodeWS = new node.ws(`${node.wsurl}?token=${node.osKey}`);
-                    }else {
-                        //sendAlertMsg("Opening WS without OS key")
-                        node.moonNodeWS = new node.ws(node.wsurl);
-                    }
-                }
-                catch(e){
-                    node.osKey = null;
-                    sendAlertMsg("Error opening websocket. The command has not been sent. Error: " + e);
-                    node.moonNodeWS.close();
-                    return;
-                }
-                
-                node.moonNodeWS.on('error', function (error){
-                    node.osKey = null;
-                    sendAlertMsg("WebSocket Error. The command has not been sent. Error: " + error);
-                    node.moonNodeWS.close();
-                    node.wsOpen = false;
-                    return;
-                });
-                
-                node.moonNodeWS.on('open', function open() {
-                    //Send the Command
-                    node.wsOpen = true;
-                    var tmpPayload = {
-                        "jsonrpc": "2.0",
-                        "method": "printer.gcode.script",
-                        "params": {
-                            "script": strCMD
-                        },
-                        "id": getMoonID(),
-                    }
-                    node.moonNodeWS.send(JSON.stringify(tmpPayload));
-                    if(node.stateless){
-                        try{
-                            node.wsOpen = false;
-                            node.moonNodeWS.close();
-                        }
-                        catch {
-                            //do nothing
-                        }
-                        try{
-                            node.wsOpen = false;
-                            node.moonNodeWS.terminate();
-                        }
-                        catch {
-                            //do nothing
-                        }
-                        if(node.currMsg.hasOwnProperty('moonNode')){
-                            node.currMsg.moonNode.cmdSent = strCMD;
-                            node.currMsg.moonNode.cmdResponse = "Not Applicable : Stateless mode enabled";
-                        } else {
-                            node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": "Not Applicable : Stateless mode enabled"};
-                        }
-                        node.send([node.currMsg, null, null]);
-                    }
-                });
-
-                node.moonNodeWS.on('message', function incoming(data) {
-                    var tmpData = JSON.parse(data);
-                    if(!node.stateless){
-                        if(tmpData.hasOwnProperty('result') || tmpData.hasOwnProperty('error')){
-                            if (node.currMsg.hasOwnProperty('moonNode')){
-                                node.currMsg.moonNode.cmdSent = strCMD;
-                                node.currMsg.moonNode.cmdResponse = tmpData;
-                            } else {
-                                node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": tmpData};
-                            }
-                            if(tmpData.hasOwnProperty('error')){
-                                node.send([null, null, node.currMsg]);
-                            }else {
-                            node.send([node.currMsg, null, null]);
-                            }
-                        }else if(tmpData.hasOwnProperty('method')) {
-                            if(tmpData.method == "notify_gcode_response"){
-                                if (node.currMsg.hasOwnProperty('moonNode')){
-                                    node.currMsg.moonNode.cmdSent = strCMD;
-                                    node.currMsg.moonNode.cmdResponse = tmpData;
-                                } else {
-                                    node.currMsg.moonNode = {"cmdSent": strCMD, "cmdResponse": tmpData};
-                                }
-                                node.send([null, node.currMsg, null]);
-                            }
-                        }
-                    }
-                });
-            }
-        };
-        
-        var sndCommand = function(msg) {
-            if (node.server) {
+        async function sendHTTPGCodeCmd(msg){
+            return new Promise((resolve, reject) => {
                 var strCMD = null;
                 if (msg.hasOwnProperty('payload')){
                     if (msg.payload.hasOwnProperty('cmd')){
@@ -784,19 +639,89 @@ module.exports = function(RED) {
                 } else {
                     strCMD = node.command;
                 }
-                       
-                try{
-                    sendCmdByWS(strCMD);
+                let tmpHeaders = {
+                    "Content-Type": "application/json"
                 }
-                catch(e){
-                    failedCMD(e, msg);
-                };
-            };
-        };
-        
-        node.on('input', function(msg) {
-            node.currMsg = msg;
-            sndCommand(msg);
+                if(node.mrapi){
+                    //console.log("Using API Key")
+                    tmpHeaders = {
+                        "Content-Type": "application/json",
+                        "X-API-Key": node.mrapi // API KEY
+                    }
+                }
+                //console.log("CMD", strCMD)
+                axios({
+                    method: "GET",
+                    url: `http://${node.server.server}/printer/gcode/script?script=${strCMD}`,
+                    headers: tmpHeaders
+                })
+                .then((response) => {
+                    resolve(response)
+                })
+                .catch((error) => {
+                    reject(error);
+                })
+            });
+        }
+
+        async function handleMessage(currMsg, currSend, currDone){
+            const sendCmd = await sendHTTPGCodeCmd(currMsg)
+            .then(res => {
+                //console.log("data", res.data)
+                node.sndMsg1 = currMsg;
+                if(res.message) {
+                    node.sndMsg3 = res.message;
+                }
+                if(res.data){
+                    node.sndMsg2 = res.data;
+                }
+                //console.log("res", res)
+                if(!node.stateless){currSend([node.sndMsg1, node.sndMsg2, node.sndMsg3], false)};
+                currDone();
+                node.msgQueue.shift()
+                if (node.msgQueue.length > 0) {
+                    handleMessage(node.msgQueue[0].thisMsg, node.msgQueue[0].thisSend, node.msgQueue[0].thisDone)
+                }
+            }).catch(e => {
+                //console.log("res e", e)
+                node.sndMsg1 = currMsg;
+                node.sndMsg3 = e.message;
+                currSend([node.sndMsg1, node.sndMsg2, node.sndMsg3], false);
+                currDone();
+                node.msgQueue.shift()
+                if (node.msgQueue.length > 0) {
+                    handleMessage(node.msgQueue[0].thisMsg, node.msgQueue[0].thisSend, node.msgQueue[0].thisDone)
+                }
+            });
+        }
+
+            
+        node.on('input', async function(msg, send, done) {
+            // If this is pre-1.0, 'send' will be undefined, so fallback to node.send
+            send = send || function() { node.send.apply(node,arguments) }
+            //check for cancel command first
+            var strCMD = null;
+            if (msg.hasOwnProperty('payload')){
+                if (msg.payload.hasOwnProperty('cmd')){
+                    strCMD = msg.payload.cmd;
+                } else {
+                    strCMD = node.command;
+                }
+            } else {
+                strCMD = node.command;
+            }
+            if(strCMD === 'CANCEL'){
+                //clear current queue
+                node.msgQueue = [];
+                send(['Cancelled By User', 'Cancelled By User', 'Cancelled By User']);
+                done();
+            }else{
+                //process as normal
+                node.msgQueue.push( {thisMsg: msg, thisSend: send, thisDone: done} )
+                if (node.msgQueue.length == 1) {
+                    handleMessage(node.msgQueue[0].thisMsg, node.msgQueue[0].thisSend, node.msgQueue[0].thisDone)
+                }
+            }
         });
         node.on('close', function() {
             // close ws

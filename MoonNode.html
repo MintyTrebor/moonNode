@@ -231,17 +231,17 @@
         <dt>Command
             <span class="property-type"> String</span>
         </dt>
-        <dd> The g-code or klipper command to send to Moonraker. Note: A command set by <code>msg.payload.cmd</code> will override the command entered.</dd>
+        <dd> The g-code or klipper command to send to MoonRaker. Note: A command set by <code>msg.payload.cmd</code> will override the command entered in the nodes UI. <code>msg.payload.cmd</code> commands will be queued and executed in the sequence they were received. The node will always wait for a response before sending the next command in the queue.</dd>
         <dt>Stateless
             <span class="property-type"> CheckBox</span>
         </dt>
-        <dd> If enabled the node will output the incoming msg as soon as the command is sent to Moonraker, it will not wait for a response.  When disabled the node will wait for a response from Moonraker before sending the incoming msg.</dd>
+        <dd> If enabled the node will not output any responses from MoonRaker.  When disabled the node will display the response from MoonRaker when the command response has been recieved.</dd>
     </dl>
     <h3>Inputs</h3>
     <ol class="node-ports">
         <li>CMD In
             <dl class="message-properties">
-                <dd>Triggers the Command on receipt of msg. If the msg contains <code>msg.payload.cmd</code> the node will use this value as the Command, overriding the Command property.
+                <dd>Triggers the Command on receipt of msg. If the msg contains <code>msg.payload.cmd</code> the node will use this value as the Command, overriding the Command property. Users can clear current queue by injecting <code>msg.payload.cmd</code> "CANCEL"
             </dl>
         </li>
     </ol>
