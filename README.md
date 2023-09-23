@@ -39,6 +39,7 @@ Changelog:
 0.1.4 -- Improved API error handling to prevent crash when an Invalid API is entered, + added notice to deploy when connection properties are changed.  
 0.1.5 -- Added queue to CMD node to enforce processing of commands in the sequence they were received by the node. Users can clear current queue by injecting msg.payload.cmd: "CANCEL".   
 0.1.6 -- Added RAW output to Monitor node which outputs the latest received JSON from MoonRaker without any processing. Updated toolhead.position logic to replace previous values in the fullmodel output instead of adding to existing postion data.   
+0.1.7 -- Bug fix to resolve inconsistent javascript behaviour.
 **NOTE: If upgrading from a version prior to V0.0.18 you will need to re-configure all deployed Monitor Nodes.**  
 
 

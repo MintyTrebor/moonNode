@@ -484,8 +484,10 @@ module.exports = function(RED) {
                                 parsedData = tmpFullModel.params[0];
                                 tmpPrevData = JSON.parse(JSON.stringify(node.moonNodeFullModel));
                                 //deal with postion data - allways replace never merge
-                                if(parsedData.toolhead.position){
-                                    node.moonNodeFullModel.toolhead.position = {};
+                                if(parsedData.hasOwnProperty('toolhead')){
+                                    if(parsedData.toolhead.hasOwnProperty('position')){
+                                        node.moonNodeFullModel.toolhead.position = {};
+                                    }
                                 }
                                 mergedModel = merge(node.moonNodeFullModel, parsedData, { arrayMerge : combineMerge });
                                 bHasMsg = false;                                             
