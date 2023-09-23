@@ -223,7 +223,7 @@ module.exports = function(RED) {
                     alert: e
                 }
             };
-            node.send([null, msg]);
+            node.send([null, msg, null]);
         };
 
         const combineMerge = (target, source, options) => {
@@ -251,7 +251,7 @@ module.exports = function(RED) {
                     monitorError: "Restarting Websocket : Reason = " + e
                 }
             };
-            node.send([null, msg]);
+            node.send([null, msg, null]);
             node.normClose = true;
             node.moonNodeFirstMsg = true;
             node.status({fill:"yellow",shape:"dot",text:"disconnected"});
@@ -430,7 +430,9 @@ module.exports = function(RED) {
                         msg = null;
                         var mergedModel = null;
                         var parsedData = null;
-                        var tmpFullModel = null
+                        var tmpFullModel = null;
+                        var tmpPrevData = null;
+                        var rawMSG = null;
                         if(!node.printerReady && node.gotPrinterStatus){
                             //sendAlertMsg("Moonraker Status: = " + JSON.stringify(data));
                             node.printerReady = checkIfPrinterReady(data);
@@ -462,7 +464,13 @@ module.exports = function(RED) {
                                         prevModel: null
                                     }
                                 };
-                                node.send([msg, null]);
+                                rawMSG = {
+                                    topic:"RAWJSON", 
+                                    payload: {
+                                        RAW: tmpFullModel
+                                    }
+                                };
+                                node.send([msg, null, rawMSG]);
                                 node.moonNodeFirstMsg = false;
                                 return;
                             }
@@ -474,6 +482,11 @@ module.exports = function(RED) {
                             tmpFullModel = JSON.parse(data)
                             if(tmpFullModel.method == "notify_status_update"){
                                 parsedData = tmpFullModel.params[0];
+                                tmpPrevData = JSON.parse(JSON.stringify(node.moonNodeFullModel));
+                                //deal with postion data - allways replace never merge
+                                if(parsedData.toolhead.position){
+                                    node.moonNodeFullModel.toolhead.position = {};
+                                }
                                 mergedModel = merge(node.moonNodeFullModel, parsedData, { arrayMerge : combineMerge });
                                 bHasMsg = false;                                             
                                 msg = {
@@ -481,10 +494,16 @@ module.exports = function(RED) {
                                     payload: {
                                         fullModel: mergedModel,
                                         patchModel: parsedData,
-                                        prevModel:  node.moonNodeFullModel
+                                        prevModel:  tmpPrevData
                                     }
                                 };
-                                node.send([msg, null]);
+                                rawMSG = {
+                                    topic:"RAWJSON", 
+                                    payload: {
+                                        RAW: tmpFullModel
+                                    }
+                                };
+                                node.send([msg, null, rawMSG]);
                                 node.moonNodeFullModel = mergedModel;
                                 mergedModel = null
                                 return;
@@ -599,7 +618,7 @@ module.exports = function(RED) {
                 msg.moonNode = {
                     monitorError: "No monitorState specified or Uncaught Error : err = " + e
                 }
-                node.send([null, msg]);
+                node.send([null, msg, null]);
             }
         });
     };
